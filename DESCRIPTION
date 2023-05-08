@@ -1,0 +1,35 @@
+Package: AgreenaRothC2
+Title: What the Package Does (One Line, Title Case)
+Version: 0.0.2
+Authors@R: 
+    person("Marcos", "Alves", , "marcos.alves@agreena.com", role = c("aut", "cre"))
+Description: Group of convenience functions to run RothC from SoilR.
+License: use_mit_license()
+Imports:
+	  SoilR,
+	  stats,
+	  maps,
+	  jsonlite,
+	  nasapower,
+	  dplyr,
+	  ggplot2,
+	  ggpubr,
+	  tidyr,
+	  ggnewscale,
+	  utils,
+	  rlang,
+	  stringr,
+	  digest,
+	  jsonlite
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Suggests: 
+    knitr,
+    rmarkdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Depends: 
+    R (>= 2.10)
+LazyData: true

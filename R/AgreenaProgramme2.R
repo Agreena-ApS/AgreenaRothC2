@@ -15,6 +15,7 @@
 #' @param till_s date ranges
 #' @param soiltype argument necessary if \code{soil_data} is numerical
 #' @param soil_data Either "lucas", "isric" or a number describing SOM in %
+#' @param calibrated Use calibation factors: TRUE or FALSE
 #' @return returns a data frame with average (AV) and standard deviation (SD)
 #' of surface temperature (TS), bias corrected precipitation (PRECTOTCORR) and
 #' Evapotranspiration Energy Flux (EVPTRNS).
@@ -40,7 +41,8 @@ AgreenaProgramme2 <- function(
            till_b = c("Reduced tillage", "Conventional tillage", "No tillage", "Not available"),
            till_s = c("Reduced tillage", "Conventional tillage", "No tillage", "Not available"),
            soiltype = "Clay",
-           soil_data = "lucas") {
+           soil_data = "lucas",
+           calibrated = TRUE) {
 
     set.seed(123)
     start <- Sys.time()
@@ -147,28 +149,33 @@ AgreenaProgramme2 <- function(
 
     files <- list.files("inputs_cft")
     file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_coeffs", ".rds")
-    if (any(grepl(file_name, files))) {
-      coeffs <- readRDS(paste0("inputs_cft/", file_name))
-      if (is.null(coeffs)) {
+    if(calibrated){
+      if (any(grepl(file_name, files))) {
+        coeffs <- readRDS(paste0("inputs_cft/", file_name))
+        if (is.null(coeffs)) {
+          coeffs <- get_coeffs(attr(soil, "meta")$Longitude, attr(soil, "meta")$Latitude)
+          if (is.null(coeffs)) {
+            coeffs$cf3 <- 1
+            coeffs$cf4 <- 1
+            coeffs$cf5 <- 1
+            saveRDS(coeffs, paste0("inputs_cft/", file_name))
+          }
+        }
+      } else {
         coeffs <- get_coeffs(attr(soil, "meta")$Longitude, attr(soil, "meta")$Latitude)
         if (is.null(coeffs)) {
           coeffs$cf3 <- 1
           coeffs$cf4 <- 1
           coeffs$cf5 <- 1
           saveRDS(coeffs, paste0("inputs_cft/", file_name))
+        } else {
+          saveRDS(coeffs, paste0("inputs_cft/", file_name))
         }
       }
     } else {
-      coeffs <- get_coeffs(attr(soil, "meta")$Longitude, attr(soil, "meta")$Latitude)
-      if (is.null(coeffs)) {
-        coeffs$cf3 <- 1
-        coeffs$cf4 <- 1
-        coeffs$cf5 <- 1
-        saveRDS(coeffs, paste0("inputs_cft/", file_name))
-      } else {
-        saveRDS(coeffs, paste0("inputs_cft/", file_name))
-      }
+      coeffs <- data.frame("cf3" = 1,"cf4" = 1, "cf5" = 1)
     }
+
 
 
     if (is.null(country)) {

@@ -15,7 +15,8 @@ AgreenaProgramme2(
   till_b = c("Reduced tillage", "Conventional tillage", "No tillage", "Not available"),
   till_s = c("Reduced tillage", "Conventional tillage", "No tillage", "Not available"),
   soiltype = "Clay",
-  soil_data = "lucas"
+  soil_data = "lucas",
+  calibrated = TRUE
 )
 }
 \arguments{
@@ -42,6 +43,8 @@ single value is passed the whole period will be treated homogeneously.}
 \item{soiltype}{argument necessary if \code{soil_data} is numerical}
 
 \item{soil_data}{Either "lucas", "isric" or a number describing SOM in \%}
+
+\item{calibrated}{Use calibation factors: TRUE or FALSE}
 }
 \value{
 returns a data frame with average (AV) and standard deviation (SD)

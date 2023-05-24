@@ -26,14 +26,15 @@ config <- function(cfg){
   input_version_folder <- file.path(farm_input_folder, cfg[["version"]])
   if (!dir.exists(input_version_folder)) {
     dir.create(input_version_folder)
-    stop("Version input folder created. Add running files to the folder")
+    warning("Version input folder created. Add running files to the folder")
+    return(NULL)
   } else {
     files <- list.files(input_version_folder)
     if (length(files)<2) {
       stop("Less than 2 input files")
     }
-    field_data <- files[grep("Base",files)]
-    fert_data <- files[grep("Fert",files)]
+    field_data <- files[grep("Base", files, ignore.case = TRUE)]
+    fert_data <- files[grep("Fert", files, ignore.case = TRUE)]
 
     split_string <- strsplit(field_data, ".", fixed = TRUE)[[1]]
     field_data_new <- paste0(split_string[1],"_",cfg[["version"]], ".", split_string[2])
@@ -71,4 +72,5 @@ config <- function(cfg){
  options(org_fert_c_rate = cfg[["org_fert_c_rate"]])
  options(crop_names = cfg[["crop_names"]])
  options(data_source = data_input_folder)
+ write_log()
 }

@@ -1,4 +1,5 @@
 #' @import jsonlite
+#' @import httr
 #' @export
 get_coeffs <- function(lon, lat) {
   retrive_api <- function(lon,lat){

@@ -1,16 +1,16 @@
 #' @title Initialize soil carbon
 #' @description Find the equilibrium initial soil carbon for all rothc carbon pools.
 #' @param ini_carbon initial C value
-#' @param env_clay caly content
+#' @param env_clay clay content
 #' @param xi decomposition rate factors
-#' @param cf4 Calbration factors for Decomposition rates
+#' @param cf4 Calibration factors for Decomposition rates
 #' @name ini_carbon_pools
 #' @author Marcos Alves
 #' @export
 #' @import SoilR
 
 
-ini_carbon_pools <- function(ini_carbon, env_clay,xi, cf4) {
+ini_carbon_pools <- function(ini_carbon, env_clay, xi, cf4) {
   iom <- 0.049 * (ini_carbon^(1.139))
   soilC_calib <- function(inp_calib) {
     c_init <<- CeqlRoth(

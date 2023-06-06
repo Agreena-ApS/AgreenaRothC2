@@ -9,11 +9,11 @@ ini_carbon_pools(ini_carbon, env_clay, xi, cf4)
 \arguments{
 \item{ini_carbon}{initial C value}
 
-\item{env_clay}{caly content}
+\item{env_clay}{clay content}
 
 \item{xi}{decomposition rate factors}
 
-\item{cf4}{Calbration factors for Decomposition rates}
+\item{cf4}{Calibration factors for Decomposition rates}
 }
 \description{
 Find the equilibrium initial soil carbon for all rothc carbon pools.

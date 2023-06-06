@@ -9,10 +9,13 @@
 
 expand_data_set <-
   function(x) {
-
     unlist_null <- function(x) {
-      if (is.null(x)) return(NA)
-      if (is.list(x)) return(sapply(x, unlist_null))
+      if (is.null(x)) {
+        return(NA)
+      }
+      if (is.list(x)) {
+        return(sapply(x, unlist_null))
+      }
       return(x)
     }
 
@@ -58,15 +61,15 @@ expand_data_set <-
       }
     }
 
-   # toremove[is.na(toremove)] <- 0
+    # toremove[is.na(toremove)] <- 0
     toremove <- as.logical(toremove)
-    x <- rbind(x[!toremove,], new_rows)
+    x <- rbind(x[!toremove, ], new_rows)
     x <- x[order(x$`Field ID`), ]
-    x[,col_depth] <- as.numeric(unlist(x[,col_depth]))
-    x[,col_end] <- as.numeric(unlist(x[,col_end]))
-    x[,col_start] <- as.numeric(unlist(x[,col_start]))
+    x[, col_depth] <- as.numeric(unlist(x[, col_depth]))
+    x[, col_end] <- as.numeric(unlist(x[, col_end]))
+    x[, col_start] <- as.numeric(unlist(x[, col_start]))
 
-    x <- x %>% tidyr::drop_na(`SOC Start Converted`,`SOC End Converted`,`Sampling depth increment`, CFGs)
+    x <- x %>% tidyr::drop_na(`SOC Start Converted`, `SOC End Converted`, `Sampling depth increment`, CFGs)
 
     return(x)
   }

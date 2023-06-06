@@ -4,7 +4,7 @@
 #' @docType data
 #' @author Marcos Alves
 #' @keywords data
-'cc'
+"cc"
 
 #' This is data to be included in my package
 #'
@@ -12,7 +12,7 @@
 #' @docType data
 #' @author Marcos Alves
 #' @keywords data
-'CFGs'
+"CFGs"
 
 
 #' This is data to be included in my package
@@ -21,7 +21,7 @@
 #' @docType data
 #' @author Marcos Alves
 #' @keywords data
-'dsw'
+"dsw"
 
 #' This is data to be included in my package
 #'
@@ -29,7 +29,7 @@
 #' @docType data
 #' @author Marcos Alves
 #' @keywords data
-'lucas'
+"lucas"
 
 #' This is data to be included in my package
 #'
@@ -37,7 +37,7 @@
 #' @docType data
 #' @author Marcos Alves
 #' @keywords data
-'res_fractions'
+"res_fractions"
 
 #' This is data to be included in my package
 #'
@@ -45,7 +45,7 @@
 #' @docType data
 #' @author Marcos Alves
 #' @keywords data
-'resid_mgmt'
+"resid_mgmt"
 
 #' This is data to be included in my package
 #'
@@ -53,7 +53,7 @@
 #' @docType data
 #' @author Marcos Alves
 #' @keywords data
-'tillage_convert'
+"tillage_convert"
 
 #' This is data to be included in my package
 #'
@@ -61,4 +61,4 @@
 #' @docType data
 #' @author Marcos Alves
 #' @keywords data
-'yld2bio'
+"yld2bio"

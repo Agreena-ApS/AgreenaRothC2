@@ -79,7 +79,7 @@ get_isric_soil_profile_rothc <- function(lonlat,
 
 
   # if(any(is.na(ocs))) stop("No soil data available for this location. Did you specify the coordinates correctly?")
-  #Algorithm to deal with missing/invalid lat and long values
+  # Algorithm to deal with missing/invalid lat and long values
   if (any(is.na(ocs))) {
     while (any(is.na(ocs))) {
       lon <- runif(n, min = lon - c, max = lon + c)

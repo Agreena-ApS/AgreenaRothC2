@@ -10,7 +10,7 @@ plot_rothc(...)
 \item{...}{list of objects output from \link{AgreenaRothC}}
 }
 \value{
-Long formatted soil carbon values that can be ploted by \link{plot_rothc}
+Long formatted soil carbon values that can be plotted by \link{plot_rothc}
 }
 \description{
 Plot AgreenaRothC diagnostics plots

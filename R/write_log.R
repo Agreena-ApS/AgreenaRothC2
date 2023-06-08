@@ -2,7 +2,7 @@
 
 write_log <- function() {
   save_dir <- getOption("output_version_folder")
-  calling_file <- file.path(getwd(),"main_run.R")
+  calling_file <- file.path(getOption("root"), "main_run.R")
   timestamp <- format(Sys.time(), "%Y-%m-%d_%H-%M-%S")
   log_file <- paste0("log_", timestamp, ".txt")
   log_path <- file.path(save_dir, log_file)

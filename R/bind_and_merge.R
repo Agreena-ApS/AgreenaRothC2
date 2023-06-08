@@ -25,10 +25,10 @@ bind_and_merge <- function(files) {
   read_file <- function(file) {
     ext <- tools::file_ext(file)
     switch(ext,
-           csv = read.csv(file),
-           xlsx = readxl::read_xlsx(file),
-           rds = readRDS(file),
-           stop("Unsupported file type")
+      csv = read.csv(file),
+      xlsx = readxl::read_xlsx(file),
+      rds = readRDS(file),
+      stop("Unsupported file type")
     )
   }
   rothc_data <- bind_rows(lapply(files$RothC, read_file))

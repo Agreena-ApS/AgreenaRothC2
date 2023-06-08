@@ -1,6 +1,6 @@
 #' @title Plot AgreenaRothC diagnostics plots
 #' @param ... list of objects output from \link{AgreenaRothC}
-#' @return Long formatted soil carbon values that can be ploted by \link{plot_rothc}
+#' @return Long formatted soil carbon values that can be plotted by \link{plot_rothc}
 #' @details Receives as inputs a list of data frames containing the output of AgreenaRothC and plots diagnostics graphs comparing different runs
 #' @author Marcos Alves
 #' @seealso \link{AgreenaRothC}

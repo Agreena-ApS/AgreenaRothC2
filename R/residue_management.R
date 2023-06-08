@@ -11,8 +11,7 @@ residue_management <- function(res_mgmt) {
   res <- NULL
   res_mgmt <- gsub(" ", "", res_mgmt) %>% toupper()
   for (i in res_mgmt) {
-    res <- append(res,unlist(resid_mgmt[i,1:12]))
+    res <- append(res, unlist(resid_mgmt[i, 1:12]))
   }
   return(res)
 }
-

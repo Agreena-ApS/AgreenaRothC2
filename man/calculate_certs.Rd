@@ -46,5 +46,4 @@ files <- list(
 result <- calculate_certs(files)
 print(result)
 
-
 }

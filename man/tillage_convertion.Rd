@@ -2,7 +2,7 @@
 % Please edit documentation in R/tillage_convertion.R
 \name{tillage_convertion}
 \alias{tillage_convertion}
-\title{Tillage convertion factor}
+\title{Tillage conversion factor}
 \usage{
 tillage_convertion(tillage)
 }
@@ -13,7 +13,7 @@ tillage_convertion(tillage)
 Vector with monthly values
 }
 \description{
-Select the convertion factor depending on the tillage regime
+Select the conversion factor depending on the tillage regime
 }
 \author{
 Marcos Alves

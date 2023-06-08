@@ -2,20 +2,20 @@
 #' @import httr
 #' @export
 get_coeffs <- function(lon, lat) {
-  retrive_api <- function(lon,lat){
-  coeficient_request_body <- paste0('{
+  retrive_api <- function(lon, lat) {
+    coeficient_request_body <- paste0('{
   "collections": [
     "climate_zone_coefficients"
   ],
   "intersects": {
-        "coordinates": [',lon,",",lat, '],
+        "coordinates": [', lon, ",", lat, '],
         "type": "Point"
       }
  }')
-  res <- POST("https://stac-api-ab6bkjb4oq-nw.a.run.app/search", body = coeficient_request_body, encode = "json")
-  data = fromJSON(rawToChar(res$content))
-  coeffs <- data$features$properties$coefficients
-  return(coeffs)
+    res <- POST("https://stac-api-ab6bkjb4oq-nw.a.run.app/search", body = coeficient_request_body, encode = "json")
+    data <- fromJSON(rawToChar(res$content))
+    coeffs <- data$features$properties$coefficients
+    return(coeffs)
   }
   coeffs <- retrive_api(lon, lat)
 
@@ -42,8 +42,3 @@ get_coeffs <- function(lon, lat) {
   # }
   return(coeffs)
 }
-
-
-
-
-

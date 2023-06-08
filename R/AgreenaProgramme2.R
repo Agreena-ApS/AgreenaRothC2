@@ -44,7 +44,9 @@ AgreenaProgramme2 <- function(
     soil_data = "lucas",
     calibrated = TRUE,
     override_clay_val,
-    override_init_soc_val) {
+    override_init_soc_val,
+    soil,
+    wth) {
   set.seed(123)
   start <- Sys.time()
 
@@ -103,58 +105,60 @@ AgreenaProgramme2 <- function(
     dir.create("inputs_cft")
   }
 
-  if (soil_data == "isric") {
-    files <- list.files("inputs_cft")
-    file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_soil", ".rds")
-    if (any(grepl(file_name, files))) {
-      soil <- readRDS(paste0("inputs_cft/", file_name))
+  if (missing(soil)) {
+    if (soil_data == "isric") {
+      files <- list.files("inputs_cft")
+      file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_soil", ".rds")
+      if (any(grepl(file_name, files))) {
+        soil <- readRDS(paste0("inputs_cft/", file_name))
+      } else {
+        soil <-
+          get_isric_soil_profile_rothc(lonlat,
+            statistic = "mean",
+            find.location.name = FALSE
+          )
+        saveRDS(soil, paste0("inputs_cft/", file_name))
+      }
     } else {
-      soil <-
-        get_isric_soil_profile_rothc(lonlat,
-          statistic = "mean",
-          find.location.name = FALSE
-        )
-      saveRDS(soil, paste0("inputs_cft/", file_name))
-    }
-  } else {
-    if (soil_data == "lucas") {
-      soil <- get_lucas_soil_profile_rothc(lonlat)
-    } else {
-      if (is.numeric(soil_data)) {
-        soil_lyr_depth <- 0.3 # meters
-        # soil <-
-        #   data.frame(
-        #     label = c("0-10cm", "10-20cm", "20-30cm"),
-        #     Carbon = 1:3,
-        #     ParticleSizeClay = 1:3
-        #   )
-        soil <- data.frame(
-          label = c("0-10cm", "10-20cm", "20-30cm"),
-          Carbon = 1:3,
-          ParticleSizeClay = 1:3
-        )
-        soil$BD <- switch(soiltype,
-          "Clay" = 1.5,
-          "Silt" = 1.3,
-          "Sand" = 1.7
-        )
-        bulk_density <- soil$BD * 1000 # from g/cm3 to kg/m3 # From Lucas BD in the
-        soil$Carbon <-
-          soil_data / 172 * bulk_density * soil_lyr_depth * 10 # from SOM (CFT input) to tC/ha (RothC input)
-        # soil$ParticleSizeClay <- soil_lucas$ParticleSizeClay[1]
-        soil$ParticleSizeClay <- switch(soiltype,
-          "Clay" = 0.60,
-          "Silt" = 0.30,
-          "Sand" = 0.15
-        )
-        attr(soil, "meta")$Longitude <- lonlat[1]
-        attr(soil, "meta")$Latitude <- lonlat[2]
+      if (soil_data == "lucas") {
+        soil <- get_lucas_soil_profile_rothc(lonlat)
+      } else {
+        if (is.numeric(soil_data)) {
+          soil_lyr_depth <- 0.3 # meters
+          # soil <-
+          #   data.frame(
+          #     label = c("0-10cm", "10-20cm", "20-30cm"),
+          #     Carbon = 1:3,
+          #     ParticleSizeClay = 1:3
+          #   )
+          soil <- data.frame(
+            label = c("0-10cm", "10-20cm", "20-30cm"),
+            Carbon = 1:3,
+            ParticleSizeClay = 1:3
+          )
+          soil$BD <- switch(soiltype,
+            "Clay" = 1.5,
+            "Silt" = 1.3,
+            "Sand" = 1.7
+          )
+          bulk_density <- soil$BD * 1000 # from g/cm3 to kg/m3 # From Lucas BD in the
+          soil$Carbon <-
+            soil_data / 172 * bulk_density * soil_lyr_depth * 10 # from SOM (CFT input) to tC/ha (RothC input)
+          # soil$ParticleSizeClay <- soil_lucas$ParticleSizeClay[1]
+          soil$ParticleSizeClay <- switch(soiltype,
+            "Clay" = 0.60,
+            "Silt" = 0.30,
+            "Sand" = 0.15
+          )
+          attr(soil, "meta")$Longitude <- lonlat[1]
+          attr(soil, "meta")$Latitude <- lonlat[2]
+        }
       }
     }
   }
 
-  files <- list.files("inputs_cft")
-  file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_coeffs", ".rds")
+  # files <- list.files("inputs_cft")
+  # file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_coeffs", ".rds")
   if (calibrated) {
     if (any(grepl(file_name, files))) {
       coeffs <- readRDS(paste0("inputs_cft/", file_name))
@@ -183,26 +187,28 @@ AgreenaProgramme2 <- function(
   }
 
 
-
-  if (is.null(country)) {
-    files <- list.files("inputs_cft")
-    file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "31", "_wth", ".rds")
-    if (any(grepl(file_name, files))) {
-      wth <- readRDS(paste0("inputs_cft/", file_name))
+  if (missing(wth)) {
+    if (is.null(country)) {
+      files <- list.files("inputs_cft")
+      file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "31", "_wth", ".rds")
+      if (any(grepl(file_name, files))) {
+        wth <- readRDS(paste0("inputs_cft/", file_name))
+      } else {
+        wth <-
+          get_wth_power_nasa(
+            lonlat = c(
+              attr(soil, "meta")$Longitude,
+              attr(soil, "meta")$Latitude
+            ),
+            dates = wth_dates
+          )
+        saveRDS(wth, paste0("inputs_cft/", file_name))
+      }
     } else {
-      wth <-
-        get_wth_power_nasa(
-          lonlat = c(
-            attr(soil, "meta")$Longitude,
-            attr(soil, "meta")$Latitude
-          ),
-          dates = wth_dates
-        )
-      saveRDS(wth, paste0("inputs_cft/", file_name))
+      wth <- dsw[[country]]
     }
-  } else {
-    wth <- dsw[[country]]
   }
+
 
   # inorganic Carbon
   if (base::missing(override_init_soc_val)) {
@@ -211,7 +217,6 @@ AgreenaProgramme2 <- function(
     soil$Carbon[1] <- override_init_soc_val
     iom <- 0.049 * (soil$Carbon[1]^(1.139))
   }
-
 
   if (base::missing(override_clay_val)) {
     local_clay <- base::mean(soil$ParticleSizeClay[1:3])
@@ -256,13 +261,12 @@ AgreenaProgramme2 <- function(
     dimnames = list(month.name, c("baseline", "scenario"))
   )
 
-  run_RothC <- function(
-      x,
-      trm_b,
-      trm_s,
-      inp_s,
-      spin_period,
-      sim_period) {
+  run_RothC <- function(x,
+                        trm_b,
+                        trm_s,
+                        inp_s,
+                        spin_period,
+                        sim_period) {
     trm_spin <- trm_b
 
     fxi_calib <- data.frame(

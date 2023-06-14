@@ -42,6 +42,7 @@ summarize_and_export <- function(data,
 
   # Summarize the calculations by user_id
   summarized_calc <- data %>% group_by(user_id) %>%
+    drop_na(total_removals_tCha) %>%
     summarise(total_has = sum(field_size_ha),
               total_certs = sum(total_certs),
               total_certs_ha = mean(total_certs_ha),

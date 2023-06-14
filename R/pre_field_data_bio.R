@@ -43,7 +43,7 @@ pre_field_data_bio <- function(field_data) {
   field_data <- field_data %>%
     mutate(actual_crop_name = crop_names[match(actual_crop_name, crop_names[, 1]), 2]) %>%
     drop_na(actual_crop_name) %>% # removing fields with NA actual crop names meaning they are fallow
-    mutate(actual_residues = yield_to_resid2(actual_crop_net_yield, actual_crop_name)) %>%
+    mutate(actual_residues = yield_to_resid2(actual_crop_gross_yield, actual_crop_name)) %>%
     mutate(add_bio_inpts = if_else(
       field_def_crop_residue_management_name_short %in% c("Removed", "Burned") &
         actual_crop_residue_management_name_short %in% c("Mulched"), 1,

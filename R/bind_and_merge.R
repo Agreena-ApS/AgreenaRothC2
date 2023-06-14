@@ -21,11 +21,10 @@
 #' @export
 
 bind_and_merge <- function(files) {
-  library(dplyr)
   read_file <- function(file) {
     ext <- tools::file_ext(file)
     switch(ext,
-           csv = read.csv(file),
+           csv = read_csv(file),
            xlsx = readxl::read_xlsx(file),
            rds = readRDS(file),
            stop("Unsupported file type")

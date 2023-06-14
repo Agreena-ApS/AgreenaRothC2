@@ -34,8 +34,6 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
                             buffer = 0.2,
                             premium = 0.1,
                             add_fallow_fields = TRUE) {
-  # Load the dplyr package for data manipulation
-  library(dplyr)
 
   # Call the bind_and_merge function to get the merged data
   merged <- bind_and_merge(files)

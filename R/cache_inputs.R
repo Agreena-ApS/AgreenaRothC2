@@ -53,4 +53,3 @@ load_cc <- function() {
   }
   return(cc)
 }
-

@@ -14,11 +14,13 @@ yield_to_resid <- function(yield, cropname, cf1 = 1, cf2 = 1) {
 
   cropname <- trimws(cropname, which = "both") %>% toupper()
   cropname <- agreena2cft(cropname)
-  coefs <- yld2bio[unlist(cropname), ]
+  yld2bio <- load_yld2bio()
+
+  coefs <- yld2bio[match(unlist(cropname),yld2bio[, "Coolfarm.name"]), ]
   bio_inputs <- NULL
   for (i in seq_along(cropname)) {
     bio_inputs[i] <-
-      (yield[i] * coefs[cropname[i], "Dry.matter.fraction.FDM"] * coefs[cropname[i], "Slope.a"] * cf1 + coefs[cropname[i], "Intercept.b"] * cf2) * 0.15
+      (yield[i] * coefs[i, "Dry.matter.fraction.FDM"] * coefs[i, "Slope.a"] * cf1 + coefs[i, "Intercept.b"] * cf2) * 0.15
   }
    # CFT considers a fixed amount of carbon per copr type
   return(bio_inputs)

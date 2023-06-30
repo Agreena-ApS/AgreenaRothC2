@@ -7,6 +7,7 @@
 #' @export
 
 residue_management <- function(res_mgmt) {
+  resid_mgmt <- load_resid_mgmt()
   rownames(resid_mgmt) <- toupper(rownames(resid_mgmt))
   res <- NULL
   res_mgmt <- gsub(" ", "", res_mgmt) %>% toupper()

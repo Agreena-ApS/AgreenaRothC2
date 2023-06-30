@@ -7,6 +7,8 @@
 #' @export
 
 residue_fractions <- function(cropname) {
+
+  res_fractions <- load_res_fractions()
   rownames(res_fractions) <- toupper(rownames(res_fractions))
   fractions <- NULL
   cropname <- trimws(cropname, which = "both") %>% toupper()

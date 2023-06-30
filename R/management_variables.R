@@ -17,6 +17,10 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
     dir.create("inputs")
   }
 
+  if (!dir.exists(getOption("calib_inputs"))) {
+    stop("Define folder with calibration assumptions tables")
+  }
+
   substrRight <- function(x, n){
     substr(x, nchar(x)-n+1, nchar(x))
   }
@@ -73,15 +77,19 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
   # avg_yld <- readxl::read_xlsx("/Users/marcospaulopedrosaalves/Documents/Git/AgreenaRothC_data/Yield_per_ha_estimated_datasets_final.xlsx")
   # avg_yld <- readxl::read_xlsx("/Users/marcospaulopedrosaalves/Library/CloudStorage/GoogleDrive-marcos.alves@agreena.com/Shared drives/Agreena all/09 Product, Program & Science/03 Product/03 Programme Team/01_CA Programme/02_CA_Methodology_V.2/Leakage/Preparing yield data_eurostat_fao/Yield_per_ha_estimated_datasets_2.xlsx")
   # avg_yld$Agreena_crop_name <- as.character(toupper(avg_yld$Agreena_crop_IDENTIFIER))
-  # # write.csv2(unique(as.character(avg_yld$Agreena_crop_IDENTIFIER))[order(unique(as.character(avg_yld$Agreena_crop_IDENTIFIER)))], "list_crops.csv")
+  #
+  # write_csv(base_yld[, c("eurostat_country_code", "Agreena_crop_IDENTIFIER", "yield_avg")], file.path(calib_inputs,"yields.csv"))
+  # write.csv2(unique(as.character(avg_yld$Agreena_crop_IDENTIFIER))[order(unique(as.character(avg_yld$Agreena_crop_IDENTIFIER)))], "list_crops.csv")
   # usethis::use_data(avg_yld, overwrite = T)
 
+  base_yld <- load_base_yields()
+
   nas <- is.na(cropsdf$annual_yield)
-  joint <- left_join(cropsdf, avg_yld[, c("eurostat_country_code", "Agreena_crop_IDENTIFIER", "yield_avg")], by = c("country" = "eurostat_country_code", "crop" = "Agreena_crop_IDENTIFIER"))
+  joint <- left_join(cropsdf, base_yld[, c("eurostat_country_code", "Agreena_crop_IDENTIFIER", "yield_avg")], by = c("country" = "eurostat_country_code", "crop" = "Agreena_crop_IDENTIFIER"))
   cropsdf[nas, "annual_yield"] <- joint[nas, "yield_avg"]
 
   # Manure
-  fym <- mgmt_file[, "Manure_C_value"] %>%
+  fym <- mgmt_file[, "org_fert_carb"] %>%
     unlist() %>%
     str_split(",") %>%
     unlist() %>%
@@ -127,7 +135,7 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
   tillage_cr <- mgmt_file[, "Tillage_regime"] %>%
     str_split(",") %>%
     unlist()
-  till_effect <- tillage_convertion(tillage_cr)
+  till_effect <- tillage_conversion(tillage_cr)
   if (length(crops) != length(tillage_cr) & length(tillage_cr) > 1) stop("Number of crops and tillage management are not compatible")
   cropsdf$tillage_cr <- rep_len(rep(till_effect, each = 12), length.out = length(sim_period))
 
@@ -196,6 +204,8 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
 #             "Notavailable" = 1))
 # # write.csv(tillage_convert, "/Users/marcospaulopedrosaalves/Documents/Git/AgreenaRothC/data/tillage_convert.csv")
 # # usethis::use_data(tillage_convert, overwrite = T)
+
+
 
 
 

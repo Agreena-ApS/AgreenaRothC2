@@ -8,7 +8,7 @@
 
 cover_crop_convertion <- function(ccname) {
   # rownames(cc) <- cc[,1]
-  data(cc)
+  cc <- load_cc()
   cover <- NULL
   ccname <- gsub(" ", "", ccname) %>% toupper()
   rownames(cc) <- toupper(rownames(cc))

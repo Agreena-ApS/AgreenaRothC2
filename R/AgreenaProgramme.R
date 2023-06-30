@@ -45,7 +45,7 @@ AgreenaProgramme <-
     set.seed(123)
     start <- Sys.time()
 
-    tillage_convertion <- function(x){
+    tillage_conversion <- function(x){
           y <- switch(x,
                     "Conventional tillage" = 1,
                     "No tillage" = 0.95,
@@ -65,12 +65,12 @@ AgreenaProgramme <-
 
     if(is.character(till_b)){
       till_b <- match.arg(till_b)
-      trm_b <- tillage_convertion(till_b)
+      trm_b <- tillage_conversion(till_b)
     }
 
     if(is.character(till_s)){
       till_s <- match.arg(till_s)
-      trm_s <- tillage_convertion(till_s)
+      trm_s <- tillage_conversion(till_s)
     }
 
     if(is.character(cp_b)){

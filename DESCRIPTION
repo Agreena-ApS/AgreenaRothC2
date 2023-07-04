@@ -6,23 +6,24 @@ Authors@R:
 Description: Group of convenience functions to run RothC from SoilR.
 License: use_mit_license()
 Imports:
-	  SoilR,
-	  stats,
-	  maps,
-	  jsonlite,
-	  nasapower,
-	  dplyr,
-	  ggplot2,
-	  ggpubr,
-	  tidyr,
-	  ggnewscale,
-	  utils,
-	  rlang,
-	  stringr,
-	  digest,
-	  jsonlite,
-	  httr,
-	  writexl
+    SoilR,
+    stats,
+    maps,
+    jsonlite,
+    nasapower,
+    dplyr,
+    ggplot2,
+    ggpubr,
+    tidyr,
+    ggnewscale,
+    utils,
+    rlang,
+    stringr,
+    digest,
+    jsonlite,
+    httr,
+    writexl,
+    magrittr
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3

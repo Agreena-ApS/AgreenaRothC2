@@ -32,20 +32,18 @@
 #'   file2 = "summarized_calcs_example.xlsx"
 #' )
 #' print(result)
-#' @import writexl
-#' @import dplyr
+#' @importFrom writexl write_xlsx
+#' @importFrom dplyr group_by summarise
 #' @export
 
-summarize_and_export <- function(data,
-                                 file_name_original,
-                                 file_name_summarized) {
-  # Load the dplyr package for data manipulation
-  library(dplyr)
-
+summarize_and_export <- function(
+    data,
+    file_name_original,
+    file_name_summarized) {
   # Summarize the calculations by user_id
   summarized_calc <- data %>%
-    group_by(user_id) %>%
-    summarise(
+    dplyr::group_by(user_id) %>%
+    dplyr::summarise(
       total_has = sum(field_size_ha),
       total_certs = sum(total_certs),
       total_certs_ha = mean(total_certs_ha),
@@ -54,11 +52,11 @@ summarize_and_export <- function(data,
       fees = sum(fees),
       net_certs = sum(net_certs),
       premium = sum(premium),
-      share_removals_percent = (sum(removals_minus_uncertainty_area) / (sum(removals_minus_uncertainty_area) + sum(reductions_minus_uncertainty_area))) * 100
+      share_removals_percent = (
+        sum(removals_minus_uncertainty_area) /
+          (sum(removals_minus_uncertainty_area) + sum(reductions_minus_uncertainty_area))
+      ) * 100
     )
-
-  # Load the writexl package for exporting to Excel
-  library(writexl)
 
   # Export the original data frame to an Excel file
   writexl::write_xlsx(data, file_name_original)

@@ -6,20 +6,19 @@
 #' @param cf5 calibration factor Evapotranspiration coeff
 #' @author Marcos Alves
 #' @export
-#' @import SoilR rlang
-
-# env <- environmental_variables(50, 9, 30)
+#' @importFrom SoilR fT.RothC
+#' @importFrom rlang rep_along
 
 xi_calc <- function(env, mgmt, cf5 = 1) {
   # flow rate effects distribution (baseline)
 
-  temp <- rep_along(mgmt$t, env[, "TS_AV"])
-  temp[temp < -18.3] <- -18.3 # function not defined for places with average temperature bellow 18.3 ºC
-  prec <- rep_along(mgmt$t, env[, "PRECTOTCORR_AV"])
-  evap <- rep_along(mgmt$t, env[, "EVPTRNS_AV"])
+  temp <- rlang::rep_along(mgmt$t, env[, "TS_AV"])
+  temp[temp < -18.3] <- -18.3 # function not defined for places with average temperature bellow -18.3 ºC
+  prec <- rlang::rep_along(mgmt$t, env[, "PRECTOTCORR_AV"])
+  evap <- rlang::rep_along(mgmt$t, env[, "EVPTRNS_AV"])
 
   fc <- fC_crop_retainment(mgmt$cover)
-  ft <- fT.RothC(temp)
+  ft <- SoilR::fT.RothC(temp)
   fw <- fW.RothC2(
     P = prec,
     E = evap,

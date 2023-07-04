@@ -1,4 +1,5 @@
-#' @import dplyr
+#' @importFrom dplyr mutate if_else
+#' @importFrom tidyr drop_na
 #' @export
 
 pre_field_data_bio <- function(field_data) {
@@ -41,30 +42,30 @@ pre_field_data_bio <- function(field_data) {
   crop_names <- read.csv(file.path(data_source, getOption("crop_names")))[, c(3, 4)]
 
   field_data <- field_data %>%
-    mutate(actual_crop_name = crop_names[match(actual_crop_name, crop_names[, 1]), 2]) %>%
-    drop_na(actual_crop_name) %>% # removing fields with NA actual crop names meaning they are fallow
-    mutate(actual_residues = yield_to_resid2(actual_crop_net_yield, actual_crop_name)) %>%
-    mutate(add_bio_inpts = if_else(
+    dplyr::mutate(actual_crop_name = crop_names[match(actual_crop_name, crop_names[, 1]), 2]) %>%
+    tidyr::drop_na(actual_crop_name) %>% # removing fields with NA actual crop names meaning they are fallow
+    dplyr::mutate(actual_residues = yield_to_resid2(actual_crop_net_yield, actual_crop_name)) %>%
+    dplyr::mutate(add_bio_inpts = dplyr::if_else(
       field_def_crop_residue_management_name_short %in% c("Removed", "Burned") &
         actual_crop_residue_management_name_short %in% c("Mulched"), 1,
-      if_else(
+      dplyr::if_else(
         field_def_crop_residue_management_name_short %in% c("Mulched") &
           actual_crop_residue_management_name_short %in% c("Removed", "Burned"), -1,
         0
       )
     ) * actual_residues) %>%
-    mutate(add_fym_inpts = if_else(
+    dplyr::mutate(add_fym_inpts = dplyr::if_else(
       field_def_fertilisers_mixed %in% c("only synthetic") &
         actual_fertilisers_mixed %in% c("Mixed", "Only organic"), 1,
-      if_else(
+      dplyr::if_else(
         field_def_fertilisers_mixed %in% c("Mixed", "Only organic") &
           actual_fertilisers_mixed %in% c("only synthetic"), -1,
         0
       )
     ) * add_fym_field) %>%
-    mutate(
-      add_fym_inpts = if_else(is.na(add_fym_inpts), 0, add_fym_inpts),
-      add_fym_field = if_else(is.na(add_fym_field), 0, add_fym_field)
+    dplyr::mutate(
+      add_fym_inpts = dplyr::if_else(is.na(add_fym_inpts), 0, add_fym_inpts),
+      add_fym_field = dplyr::if_else(is.na(add_fym_field), 0, add_fym_field)
     )
 
   return(field_data)

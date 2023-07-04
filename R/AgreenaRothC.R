@@ -106,7 +106,7 @@ AgreenaRothC <-
 
     # flow rate effects distribution (baseline)
     fc_b <- fC_crop_retainment(cp_b)
-    ft_b <- t(apply(wth_dist[, , "TS"], 1, fT.RothC))
+    ft_b <- t(apply(wth_dist[, , "TS"], 1, SoilR::fT.RothC))
     fw_b <-
       t(apply(wth_dist[, , c("PR", "ET")], 1, function(x) {
         f_moist_rothc(
@@ -125,7 +125,7 @@ AgreenaRothC <-
 
     # flow rate effects distribution (scenario)
     fc_s <- fC_crop_retainment(cp_s)
-    ft_s <- t(apply(wth_dist[, , "TS"], 1, fT.RothC))
+    ft_s <- t(apply(wth_dist[, , "TS"], 1, SoilR::fT.RothC))
     fw_s <-
       t(apply(wth_dist[, , c("PR", "ET")], 1, function(x) {
         f_moist_rothc(

@@ -22,13 +22,12 @@
 
 fW.RothC2 <- structure(
   function
-      (
-      P,
-      E,
-      S.Thick = 23,
-      pClay = 23.4,
-      pE = 0.75,
-      bare = FALSE) {
+  (P,
+   E,
+   S.Thick = 23,
+   pClay = 23.4,
+   pE = 0.75,
+   bare = FALSE) {
     B <- ifelse(bare == FALSE, 1, 1.8)
     Max.TSMD <- -(20 + 1.3 * pClay - 0.01 * (pClay^2)) * (S.Thick / 23) * (1 / B)
     M <- P - E * pE

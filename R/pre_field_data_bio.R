@@ -38,8 +38,8 @@ pre_field_data_bio <- function(field_data) {
   field_data <- field_data[, sel_col]
 
   data_source <- getOption("data_source")
-  crop_names <- read.csv(file.path(data_source, getOption("crop_names")))[, c(3, 4)]
-
+  # crop_names <- read.csv(file.path(data_source, getOption("crop_names")))[, c(3, 4)]
+  crop_names <- load_crop_names()
   field_data <- field_data %>%
     mutate(actual_crop_name = crop_names[match(actual_crop_name, crop_names[, 1]), 2]) %>%
     drop_na(actual_crop_name) %>% # removing fields with NA actual crop names meaning they are fallow

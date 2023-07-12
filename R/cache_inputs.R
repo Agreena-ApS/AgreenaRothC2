@@ -17,7 +17,7 @@ load_resid_mgmt <- function() {
 #' @export
 load_crop_names <- function() {
   if (!exists("crop_names")) {
-    crop_names <<- read.csv(file.path(getOption("calib_inputs"), "crop_names.csv"))
+    crop_names <<- read.csv(file.path(getOption("calib_inputs"), "crop_names.csv"), sep = ";")
   }
   return(crop_names)
 }
@@ -25,7 +25,7 @@ load_crop_names <- function() {
 #' @export
 load_yld2bio <- function() {
   if (!exists("yld2bio")) {
-    yld2bio <<- read.csv(file.path(getOption("calib_inputs"), "yld2bio.csv"))
+    yld2bio <<- read.csv(file.path(getOption("calib_inputs"), "yld2bio.csv"), sep = ";", row.names = 1)
   }
   return(yld2bio)
 }
@@ -41,7 +41,7 @@ load_tillage_convert <- function() {
 #' @export
 load_res_fractions <- function() {
   if (!exists("res_fractions")) {
-    res_fractions <<- read.csv(file.path(getOption("calib_inputs"), "res_fractions.csv"), row.names = 1)
+    res_fractions <<- read.csv(file.path(getOption("calib_inputs"), "res_fractions.csv"), row.names = 1, sep = ";")
   }
   return(res_fractions)
 }

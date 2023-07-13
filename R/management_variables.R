@@ -17,7 +17,7 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
     dir.create("inputs")
   }
 
-  if (!dir.exists(getOption("calib_inputs"))) {
+  if (!dir.exists(getOption("param_inputs"))) {
     stop("Define folder with calibration assumptions tables")
   }
 
@@ -78,7 +78,7 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
   # avg_yld <- readxl::read_xlsx("/Users/marcospaulopedrosaalves/Library/CloudStorage/GoogleDrive-marcos.alves@agreena.com/Shared drives/Agreena all/09 Product, Program & Science/03 Product/03 Programme Team/01_CA Programme/02_CA_Methodology_V.2/Leakage/Preparing yield data_eurostat_fao/Yield_per_ha_estimated_datasets_2.xlsx")
   # avg_yld$Agreena_crop_name <- as.character(toupper(avg_yld$Agreena_crop_IDENTIFIER))
   #
-  # write_csv(base_yld[, c("eurostat_country_code", "Agreena_crop_IDENTIFIER", "yield_avg")], file.path(calib_inputs,"yields.csv"))
+  # write_csv(base_yld[, c("eurostat_country_code", "Agreena_crop_IDENTIFIER", "yield_avg")], file.path(param_inputs,"yields.csv"))
   # write.csv2(unique(as.character(avg_yld$Agreena_crop_IDENTIFIER))[order(unique(as.character(avg_yld$Agreena_crop_IDENTIFIER)))], "list_crops.csv")
   # usethis::use_data(avg_yld, overwrite = T)
 
@@ -94,10 +94,10 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
     str_split(",") %>%
     unlist() %>%
     as.numeric() %>% suppressWarnings()
-    if(any(is.na(fym))){ fym <- rep(0, length(fym)) } else { fym <- fym }
-    if(is.null(fym)){ fym <- rep(0, length(fym)) } else { fym <- fym }
+    if(any(is.na(fym))){ fym <- rep(0, length(yields)) } else { fym <- fym }
+    if(is.null(fym)){ fym <- rep(0, length(yields)) } else { fym <- fym }
 
-  if (length(yields) != length(fym)) stop("Number of yields and fym are different")
+  # if (length(yields) != length(fym)) stop("Number of yields and fym are different")
   cropsdf$fym <- rep_len(rep(fym, each = 12), length.out = length(sim_period))
 
   #from Agreena to CFT crops
@@ -108,16 +108,16 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
   cropsdf$biomass_distrib <- rep_len(res_fraction, length.out = length(sim_period))
 
   # biomass input estimation
-  residues <- yield_to_resid(cropsdf$annual_yield, cropsdf$crop, cf1 = cf1, cf2 = cf2)
+  residues <- yield_to_resid2(cropsdf$annual_yield, agreena2cft(cropsdf$crop), cf1 = cf1, cf2 = cf2)
   bio_mass_input <- mgmt_file[, "BI_Converted_Value"] %>%
     unlist() %>%
     str_split(",") %>%
     unlist() %>%
     as.numeric() %>% suppressWarnings()
-    if(any(is.na(bio_mass_input))){ bio_mass_input <- rep(0, length(bio_mass_input)) } else { bio_mass_input <- bio_mass_input }
-    if(is.null(bio_mass_input)){ bio_mass_input <- rep(0, length(bio_mass_input)) } else { bio_mass_input <- bio_mass_input }
+    if(any(is.na(bio_mass_input))){ bio_mass_input <- rep(0, length(crops)) } else { bio_mass_input <- bio_mass_input }
+    if(is.null(bio_mass_input)){ bio_mass_input <- rep(0, length(crops)) } else { bio_mass_input <- bio_mass_input }
 
-  if (length(crops) != length(bio_mass_input)) stop("Number of crops and biomass inputs are different")
+  # if (length(crops) != length(bio_mass_input)) stop("Number of crops and biomass inputs are different")
   cropsdf$bio_mass_input <- rep_len(rep(bio_mass_input, each = 12), length.out = length(sim_period))
 
   cropsdf$residues <- cropsdf$bio_mass_input

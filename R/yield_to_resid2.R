@@ -10,12 +10,12 @@
 #' @author Marcos Alves
 #' @export
 
-yield_to_resid2 <- function(yield, cropname) {
+yield_to_resid2 <- function(yield, cropname, cf1 = 1, cf2 = 1) {
   # cfg <- CFGs[cropname, 1]
   cropname <- sapply(cropname,trimws)
   yld2bio <- load_yld2bio()
   coefs <- yld2bio[cropname, ]
   bio_inputs <-
-    (as.numeric(yield) * coefs[, "Dry.matter.fraction.FDM"] * coefs[, "Slope.a"] + coefs[, "Intercept.b"]) * 0.15 # CFT considers a fixed amount of carbon per crop type
+    (as.numeric(yield) * coefs[, "Dry.matter.fraction.FDM"] * coefs[, "Slope.a"] * cf1 + coefs[, "Intercept.b"] * cf2) * 0.15 # CFT considers a fixed amount of carbon per crop type
   return(bio_inputs)
 }

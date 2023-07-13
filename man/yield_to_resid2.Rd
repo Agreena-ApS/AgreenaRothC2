@@ -4,7 +4,7 @@
 \alias{yield_to_resid2}
 \title{Yield to residues}
 \usage{
-yield_to_resid2(yield, cropname)
+yield_to_resid2(yield, cropname, cf1 = 1, cf2 = 1)
 }
 \arguments{
 \item{yield}{vector with crop yields}

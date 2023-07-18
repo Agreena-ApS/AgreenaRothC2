@@ -86,6 +86,9 @@ pre_field_data_fert <- function(actuals_year){
     left_join(fert_names, by = c("field_id", "e")) %>% drop_na()
 
   fert_long$c_rate <- org_c[as.character(fert_long$fert_id), 3]
+  fert_long$c_rate <- fert_long %>%
+    inner_join(org_c, by = c("fert_id" = "id"))  %>%
+    pull(carbon_content)
 
   fert_long <- fert_long %>%
     mutate(c_added = (c_rate/100 * Application_rate) / 1000) %>%

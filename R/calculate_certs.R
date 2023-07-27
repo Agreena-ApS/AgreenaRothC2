@@ -35,7 +35,12 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
                             add_fallow_fields = TRUE) {
   # Call the bind_and_merge function to get the merged data
   merged <- bind_and_merge(files)
-
+  
+  # backward compatibility
+  if (exists("first_year", where = merged)) {
+    names(merged)[grep("first_year", names(merged))] <- "co2_removals"
+  }
+  
   Fallow_fields <- NULL
 
   if (!add_fallow_fields) {
@@ -72,13 +77,13 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
         soil_n2o_reductions,
 
       # Total emissions removals (tCO2e/ha)
-      total_removals_tCha = first_year,
+      total_removals_tCha = co2_removals,
 
       # Total emissions reductions (tCO2e)
       total_reductions_area = total_reductions_tCha * field_size_ha,
 
       # Total emissions removals (tCO2e)
-      total_removals_area = first_year * field_size_ha,
+      total_removals_area = total_removals_tCha * field_size_ha,
 
       # Emissions removals minus uncertainty deduction (tCO2e/ha)
       removals_minus_uncertainty_tCha = total_removals_tCha * (1 - uncertain_uncertanty_deduction),

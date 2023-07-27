@@ -12,7 +12,7 @@
 
 yield_to_resid2 <- function(yield, cropname, cf1 = 1, cf2 = 1) {
   # cfg <- CFGs[cropname, 1]
-  cropname <- sapply(cropname,trimws)
+  cropname <- sapply(cropname, trimws)
   yld2bio <- load_yld2bio()
   coefs <- yld2bio[cropname, ]
   bio_inputs <-

@@ -85,7 +85,7 @@ f_moist_rothc2 <- function(pp, et, s_thick, pclay, pE = 1.0, soil_cover = TRUE) 
 
 
 fwBare <- fW.RothC2(
-  P = c(1,2,3), E = c(1,2,3),
+  P = c(1, 2, 3), E = c(1, 2, 3),
   S.Thick = 1, pClay = 1,
-  pE = 1, bare = c(1,1,0)
+  pE = 1, bare = c(1, 1, 0)
 )$b

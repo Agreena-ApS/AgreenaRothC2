@@ -13,7 +13,7 @@ cover_crop_convertion <- function(ccname) {
   ccname <- gsub(" ", "", ccname) %>% toupper()
   rownames(cc) <- toupper(rownames(cc))
   for (i in ccname) {
-    cover <- append(cover,unlist(cc[i,1:12 ]))
+    cover <- append(cover, unlist(cc[i, 1:12]))
   }
   return(cover)
 }

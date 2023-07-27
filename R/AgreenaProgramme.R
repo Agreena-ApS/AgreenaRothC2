@@ -39,46 +39,47 @@ AgreenaProgramme <-
            cp_s = c("spring", "winter", "none", "catch"),
            till_b = c("Reduced tillage", "Conventional tillage", "No tillage", "Not available"),
            till_s = c("Reduced tillage", "Conventional tillage", "No tillage", "Not available"),
-           soiltype  = "Clay",
+           soiltype = "Clay",
            soil_data = "lucas") {
-
     set.seed(123)
     start <- Sys.time()
 
-    tillage_conversion <- function(x){
-          y <- switch(x,
-                    "Conventional tillage" = 1,
-                    "No tillage" = 0.95,
-                    "Reduced tillage" = 0.93,
-                    "Not available" = 1)
-          return(y)
-    }
-
-    cover_crop_convertion <- function(x){
+    tillage_conversion <- function(x) {
       y <- switch(x,
-                  "winter" = c(1,1,1,1,1,1,1,1,0,0,1,1),
-                  "none" =   c(0,0,0,0,0,1,1,1,1,0,0,0),
-                  "spring" = c(0,0,0,0,1,1,1,1,1,0,0,0),
-                  "catch" =  c(0,0,1,1,1,1,1,1,1,0,0,0))
+        "Conventional tillage" = 1,
+        "No tillage" = 0.95,
+        "Reduced tillage" = 0.93,
+        "Not available" = 1
+      )
       return(y)
     }
 
-    if(is.character(till_b)){
+    cover_crop_convertion <- function(x) {
+      y <- switch(x,
+        "winter" = c(1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1),
+        "none" =   c(0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0),
+        "spring" = c(0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0),
+        "catch" =  c(0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0)
+      )
+      return(y)
+    }
+
+    if (is.character(till_b)) {
       till_b <- match.arg(till_b)
       trm_b <- tillage_conversion(till_b)
     }
 
-    if(is.character(till_s)){
+    if (is.character(till_s)) {
       till_s <- match.arg(till_s)
       trm_s <- tillage_conversion(till_s)
     }
 
-    if(is.character(cp_b)){
+    if (is.character(cp_b)) {
       cp_b <- match.arg(cp_b)
       cp_b <- cover_crop_convertion(cp_b)
     }
 
-    if(is.character(cp_s)){
+    if (is.character(cp_s)) {
       cp_s <- match.arg(cp_s)
       cp_s <- cover_crop_convertion(cp_s)
     }
@@ -95,14 +96,15 @@ AgreenaProgramme <-
     if (soil_data == "isric") {
       soil <-
         get_isric_soil_profile_rothc(lonlat,
-                                     statistic = "mean",
-                                     find.location.name = FALSE)
+          statistic = "mean",
+          find.location.name = FALSE
+        )
     } else {
       if (soil_data == "lucas") {
         soil <- get_lucas_soil_profile_rothc(lonlat)
       } else {
         if (is.numeric(soil_data)) {
-          soil_lyr_depth <- 0.3 #meters
+          soil_lyr_depth <- 0.3 # meters
           # soil <-
           #   data.frame(
           #     label = c("0-10cm", "10-20cm", "20-30cm"),
@@ -110,8 +112,7 @@ AgreenaProgramme <-
           #     ParticleSizeClay = 1:3
           #   )
           soil <- data.frame(label = c("0-10cm", "10-20cm", "20-30cm"), Carbon = 1:3, ParticleSizeClay = 1:3)
-          soil$BD <- switch(
-            soiltype,
+          soil$BD <- switch(soiltype,
             "Clay" = 1.5,
             "Silt" = 1.3,
             "Sand" = 1.7
@@ -120,29 +121,32 @@ AgreenaProgramme <-
           soil$Carbon <-
             soil_data / 172 * bulk_density * soil_lyr_depth * 10 # from SOM (CFT input) to tC/ha (RothC input)
           # soil$ParticleSizeClay <- soil_lucas$ParticleSizeClay[1]
-          soil$ParticleSizeClay <- switch(
-            soiltype,
+          soil$ParticleSizeClay <- switch(soiltype,
             "Clay" = 0.60,
             "Silt" = 0.30,
             "Sand" = 0.15
           )
           attr(soil, "meta")$Longitude <- lonlat[1]
-          attr(soil, "meta")$Latitude  <- lonlat[2]
+          attr(soil, "meta")$Latitude <- lonlat[2]
         }
       }
     }
 
-    if(is.null(country)) {
+    if (is.null(country)) {
       wth <-
-        get_wth_power_nasa(lonlat = c(attr(soil, "meta")$Longitude,
-                                      attr(soil, "meta")$Latitude),
-                           dates = wth_dates)
+        get_wth_power_nasa(
+          lonlat = c(
+            attr(soil, "meta")$Longitude,
+            attr(soil, "meta")$Latitude
+          ),
+          dates = wth_dates
+        )
     } else {
       wth <- dsw[[country]]
     }
 
     # inorganic Carbon
-    iom <- 0.049 * (soil$Carbon[1] ^ (1.139))
+    iom <- 0.049 * (soil$Carbon[1]^(1.139))
 
     # flow rate effects distribution (baseline)
     fc_b <- fC_crop_retainment(cp_b)
@@ -177,8 +181,9 @@ AgreenaProgramme <-
 
     fxi_all <-
       array(c(fxi_b, fxi_s),
-            dim = c(12, 2),
-            dimnames = list(month.name, c("baseline", "scenario")))
+        dim = c(12, 2),
+        dimnames = list(month.name, c("baseline", "scenario"))
+      )
 
     run_RothC <-
       function(x,
@@ -191,9 +196,9 @@ AgreenaProgramme <-
 
         fxi_calib <-
           data.frame(spin_period, rep(x[, "baseline"],
-                                      length.out = length(spin_period)))
+            length.out = length(spin_period)
+          ))
         soilC_calib <- function(inp_calib) {
-
           c_init <<- CeqlRoth(
             c(
               k.DPM = 10 * trm_spin,
@@ -213,14 +218,15 @@ AgreenaProgramme <-
             clay = mean(soil$ParticleSizeClay[1:3]),
             xi = fxi_calib
           )
-           soilC <- sum(c_init)
-           return((sum(soilC) - soil$Carbon[1]) ^ 2)
-         }
+          soilC <- sum(c_init)
+          return((sum(soilC) - soil$Carbon[1])^2)
+        }
         inp_calib <- optimize(f = soilC_calib, c(0, 50))$minimum
         c_init <- as.vector(c_init)
         fxi_b <-
           data.frame(sim_period, rep(x[, "baseline"],
-                                     length.out = length(sim_period)))
+            length.out = length(sim_period)
+          ))
         model_b <- RothCModel(
           t = sim_period,
           c(
@@ -263,7 +269,8 @@ AgreenaProgramme <-
 
         fxi_s <-
           data.frame(sim_period, rep(x[, "scenario"],
-                                     length.out = length(sim_period)))
+            length.out = length(sim_period)
+          ))
         model_s <- RothCModel(
           t = sim_period,
           c(
@@ -322,7 +329,7 @@ AgreenaProgramme <-
         "Mean_PR" = colMeans(wth[, "PRECTOTCORR_AV"]),
         "Mean_ET" = colMeans(wth[, "EVPTRNS_AV"]),
         "Unit_SOC" = "",
-        "time_elapsed" =  time,
+        "time_elapsed" = time,
         "soilC_baseline" = RothC_runs$sc_baseline,
         "soilC_scenario" = RothC_runs$sc_scenario
       )

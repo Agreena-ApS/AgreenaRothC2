@@ -30,363 +30,361 @@
 #' @export
 #'
 
-AgreenaProgramme2 <- function(
-           lonlat,
-           sim_period,
-           country = NULL,
-           inp_s = "same_as_base",
-           fym_s = "same_as_base",
-           cp_b = c("spring", "winter", "none", "catch"),
-           cp_s = c("spring", "winter", "none", "catch"),
-           till_b = c("Reduced tillage", "Conventional tillage", "No tillage", "Not available"),
-           till_s = c("Reduced tillage", "Conventional tillage", "No tillage", "Not available"),
-           soiltype = "Clay",
-           soil_data = "lucas",
-           calibrated = TRUE) {
+AgreenaProgramme2 <- function(lonlat,
+                              sim_period,
+                              country = NULL,
+                              inp_s = "same_as_base",
+                              fym_s = "same_as_base",
+                              cp_b = c("spring", "winter", "none", "catch"),
+                              cp_s = c("spring", "winter", "none", "catch"),
+                              till_b = c("Reduced tillage", "Conventional tillage", "No tillage", "Not available"),
+                              till_s = c("Reduced tillage", "Conventional tillage", "No tillage", "Not available"),
+                              soiltype = "Clay",
+                              soil_data = "lucas",
+                              calibrated = TRUE) {
+  set.seed(123)
+  start <- Sys.time()
 
-    set.seed(123)
-    start <- Sys.time()
+  tillage_conversion <- function(x) {
+    y <- switch(x,
+      "Conventional tillage" = 1,
+      "No tillage" = 0.95,
+      "Reduced tillage" = 0.93,
+      "Not available" = 1
+    )
+    return(y)
+  }
 
-    tillage_conversion <- function(x) {
-      y <- switch(x,
-        "Conventional tillage" = 1,
-        "No tillage" = 0.95,
-        "Reduced tillage" = 0.93,
-        "Not available" = 1
-      )
-      return(y)
-    }
+  cover_crop_convertion <- function(x) {
+    y <- switch(x,
+      "winter" = c(0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+      "none" =   c(0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0),
+      "spring" = c(0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0),
+      "catch" =  c(1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1)
+    )
+    return(y)
+  }
 
-    cover_crop_convertion <- function(x) {
-      y <- switch(x,
-        "winter" = c(0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
-        "none" =   c(0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0),
-        "spring" = c(0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0),
-        "catch" =  c(1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1)
-      )
-      return(y)
-    }
+  if (is.character(till_b)) {
+    till_b <- match.arg(till_b)
+    trm_b <- tillage_conversion(till_b)
+  }
 
-    if (is.character(till_b)) {
-      till_b <- match.arg(till_b)
-      trm_b <- tillage_conversion(till_b)
-    }
+  if (is.character(till_s)) {
+    till_s <- match.arg(till_s)
+    trm_s <- tillage_conversion(till_s)
+  }
 
-    if (is.character(till_s)) {
-      till_s <- match.arg(till_s)
-      trm_s <- tillage_conversion(till_s)
-    }
+  if (is.character(cp_b)) {
+    cp_b <- match.arg(cp_b)
+    cp_b <- cover_crop_convertion(cp_b)
+  }
 
-    if (is.character(cp_b)) {
-      cp_b <- match.arg(cp_b)
-      cp_b <- cover_crop_convertion(cp_b)
-    }
-
-    if (is.character(cp_s)) {
-      cp_s <- match.arg(cp_s)
-      cp_s <- cover_crop_convertion(cp_s)
-    }
+  if (is.character(cp_s)) {
+    cp_s <- match.arg(cp_s)
+    cp_s <- cover_crop_convertion(cp_s)
+  }
 
 
-    # translating period in RothC months
-    years <-
-      round(as.numeric(as.Date(sim_period[2]) - as.Date(sim_period[1])) / 365)
-    sim_period <- seq(1 / 12, years, by = 1 / 12)
-    spin_period <- seq(1 / 12, 250, by = 1 / 12)
+  # translating period in RothC months
+  years <-
+    round(as.numeric(as.Date(sim_period[2]) - as.Date(sim_period[1])) / 365)
+  sim_period <- seq(1 / 12, years, by = 1 / 12)
+  spin_period <- seq(1 / 12, 250, by = 1 / 12)
 
-    # downloading external input data
-    wth_dates <- c("1991-01-01", "2021-12-30")
+  # downloading external input data
+  wth_dates <- c("1991-01-01", "2021-12-30")
 
-    if (!dir.exists("inputs_cft")) {
-      dir.create("inputs_cft")
-    }
+  if (!dir.exists("inputs_cft")) {
+    dir.create("inputs_cft")
+  }
 
-    if (soil_data == "isric") {
-      files <- list.files("inputs_cft")
-      file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_soil", ".rds")
-      if (any(grepl(file_name, files))) {
-        soil <- readRDS(paste0("inputs_cft/", file_name))
-      } else {
-        soil <-
-          get_isric_soil_profile_rothc(lonlat,
-                                       statistic = "mean",
-                                       find.location.name = FALSE)
-        saveRDS(soil, paste0("inputs_cft/", file_name))
-      }
-
-    } else {
-      if (soil_data == "lucas") {
-        soil <- get_lucas_soil_profile_rothc(lonlat)
-      } else {
-        if (is.numeric(soil_data)) {
-          soil_lyr_depth <- 0.3 # meters
-          # soil <-
-          #   data.frame(
-          #     label = c("0-10cm", "10-20cm", "20-30cm"),
-          #     Carbon = 1:3,
-          #     ParticleSizeClay = 1:3
-          #   )
-          soil <- data.frame(label = c("0-10cm", "10-20cm", "20-30cm"), Carbon = 1:3, ParticleSizeClay = 1:3)
-          soil$BD <- switch(soiltype,
-            "Clay" = 1.5,
-            "Silt" = 1.3,
-            "Sand" = 1.7
-          )
-          bulk_density <- soil$BD * 1000 # from g/cm3 to kg/m3 # From Lucas BD in the
-          soil$Carbon <-
-            soil_data / 172 * bulk_density * soil_lyr_depth * 10 # from SOM (CFT input) to tC/ha (RothC input)
-          # soil$ParticleSizeClay <- soil_lucas$ParticleSizeClay[1]
-          soil$ParticleSizeClay <- switch(soiltype,
-            "Clay" = 0.60,
-            "Silt" = 0.30,
-            "Sand" = 0.15
-          )
-          attr(soil, "meta")$Longitude <- lonlat[1]
-          attr(soil, "meta")$Latitude <- lonlat[2]
-        }
-      }
-    }
-
+  if (soil_data == "isric") {
     files <- list.files("inputs_cft")
-    file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_coeffs", ".rds")
-    if(calibrated){
-      if (any(grepl(file_name, files))) {
-        coeffs <- readRDS(paste0("inputs_cft/", file_name))
-        if (is.null(coeffs)) {
-          coeffs <- get_coeffs(attr(soil, "meta")$Longitude, attr(soil, "meta")$Latitude)
-          if (is.null(coeffs)) {
-            coeffs$cf3 <- 1
-            coeffs$cf4 <- 1
-            coeffs$cf5 <- 1
-            saveRDS(coeffs, paste0("inputs_cft/", file_name))
-          }
-        }
-      } else {
+    file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_soil", ".rds")
+    if (any(grepl(file_name, files))) {
+      soil <- readRDS(paste0("inputs_cft/", file_name))
+    } else {
+      soil <-
+        get_isric_soil_profile_rothc(lonlat,
+          statistic = "mean",
+          find.location.name = FALSE
+        )
+      saveRDS(soil, paste0("inputs_cft/", file_name))
+    }
+  } else {
+    if (soil_data == "lucas") {
+      soil <- get_lucas_soil_profile_rothc(lonlat)
+    } else {
+      if (is.numeric(soil_data)) {
+        soil_lyr_depth <- 0.3 # meters
+        # soil <-
+        #   data.frame(
+        #     label = c("0-10cm", "10-20cm", "20-30cm"),
+        #     Carbon = 1:3,
+        #     ParticleSizeClay = 1:3
+        #   )
+        soil <- data.frame(label = c("0-10cm", "10-20cm", "20-30cm"), Carbon = 1:3, ParticleSizeClay = 1:3)
+        soil$BD <- switch(soiltype,
+          "Clay" = 1.5,
+          "Silt" = 1.3,
+          "Sand" = 1.7
+        )
+        bulk_density <- soil$BD * 1000 # from g/cm3 to kg/m3 # From Lucas BD in the
+        soil$Carbon <-
+          soil_data / 172 * bulk_density * soil_lyr_depth * 10 # from SOM (CFT input) to tC/ha (RothC input)
+        # soil$ParticleSizeClay <- soil_lucas$ParticleSizeClay[1]
+        soil$ParticleSizeClay <- switch(soiltype,
+          "Clay" = 0.60,
+          "Silt" = 0.30,
+          "Sand" = 0.15
+        )
+        attr(soil, "meta")$Longitude <- lonlat[1]
+        attr(soil, "meta")$Latitude <- lonlat[2]
+      }
+    }
+  }
+
+  files <- list.files("inputs_cft")
+  file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_coeffs", ".rds")
+  if (calibrated) {
+    if (any(grepl(file_name, files))) {
+      coeffs <- readRDS(paste0("inputs_cft/", file_name))
+      if (is.null(coeffs)) {
         coeffs <- get_coeffs(attr(soil, "meta")$Longitude, attr(soil, "meta")$Latitude)
         if (is.null(coeffs)) {
           coeffs$cf3 <- 1
           coeffs$cf4 <- 1
           coeffs$cf5 <- 1
           saveRDS(coeffs, paste0("inputs_cft/", file_name))
-        } else {
-          saveRDS(coeffs, paste0("inputs_cft/", file_name))
         }
       }
     } else {
-      coeffs <- data.frame("cf3" = 1,"cf4" = 1, "cf5" = 1)
-    }
-
-
-
-    if (is.null(country)) {
-      files <- list.files("inputs_cft")
-      file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "31", "_wth", ".rds")
-      if (any(grepl(file_name, files))) {
-        wth <- readRDS(paste0("inputs_cft/", file_name))
+      coeffs <- get_coeffs(attr(soil, "meta")$Longitude, attr(soil, "meta")$Latitude)
+      if (is.null(coeffs)) {
+        coeffs$cf3 <- 1
+        coeffs$cf4 <- 1
+        coeffs$cf5 <- 1
+        saveRDS(coeffs, paste0("inputs_cft/", file_name))
       } else {
-        wth <-
-          get_wth_power_nasa(
-            lonlat = c(
-              attr(soil, "meta")$Longitude,
-              attr(soil, "meta")$Latitude
-            ),
-            dates = wth_dates
-          )
-        saveRDS(wth, paste0("inputs_cft/", file_name))
+        saveRDS(coeffs, paste0("inputs_cft/", file_name))
       }
-    } else {
-      wth <- dsw[[country]]
     }
-
-    # inorganic Carbon
-    iom <- 0.049 * (soil$Carbon[1]^(1.139))
-
-    # flow rate effects distribution (baseline)
-    fc_b <- fC_crop_retainment(cp_b)
-    ft_b <- fT.RothC(t(wth[, "TS_AV"]))
-    fw_b <- f_moist_rothc(
-      pp = t(wth[, "PRECTOTCORR_AV"]),
-      et = t(wth[, "EVPTRNS_AV"]),
-      s_thick = 30,
-      pclay = mean(soil$ParticleSizeClay[1:3]),
-      pE = 1.0 * coeffs$cf5,
-      soil_cover = cp_b
-    )
-
-    fxi_b <- as.vector(fw_b * ft_b * fc_b)
-    names(fxi_b) <- month.name
+  } else {
+    coeffs <- data.frame("cf3" = 1, "cf4" = 1, "cf5" = 1)
+  }
 
 
-    # flow rate effects distribution (scenario)
-    fc_s <- fC_crop_retainment(cp_s)
-    ft_s <- fT.RothC(t(wth[, "TS_AV"]))
-    fw_s <- f_moist_rothc(
-      pp = t(wth[, "PRECTOTCORR_AV"]),
-      et = t(wth[, "EVPTRNS_AV"]),
-      s_thick = 30,
-      pclay = mean(soil$ParticleSizeClay[1:3]),
-      pE = 1.0 * coeffs$cf5,
-      soil_cover = cp_s
-    )
 
-    fxi_s <- as.vector(fw_s * ft_s * fc_s)
-    names(fxi_s) <- month.name
-
-    fxi_all <-
-      array(c(fxi_b, fxi_s),
-        dim = c(12, 2),
-        dimnames = list(month.name, c("baseline", "scenario"))
-      )
-
-    run_RothC <-
-      function(x,
-               trm_b,
-               trm_s,
-               inp_s,
-               spin_period,
-               sim_period) {
-        trm_spin <- trm_b
-
-        fxi_calib <-
-          data.frame(spin_period, rep(x[, "baseline"],
-            length.out = length(spin_period)
-          ))
-        soilC_calib <- function(inp_calib) {
-          c_init <<- CeqlRoth(
-            c(
-              k.DPM = 10 * trm_spin * coeffs$cf4,
-              k.RPM = 0.3 * trm_spin * coeffs$cf4,
-              k.BIO = 0.66 * trm_spin * coeffs$cf4,
-              k.HUM = 0.02 * trm_spin * coeffs$cf4,
-              k.IOM = 0 * trm_spin * coeffs$cf4
-            ),
-            C0 = c(
-              DPM = 0,
-              RPM = 0,
-              BIO = 0,
-              HUM = 0,
-              IOM = iom
-            ),
-            In = inp_calib,
-            clay = mean(soil$ParticleSizeClay[1:3]),
-            xi = fxi_calib,
-            DR = 1.44 * coeffs$cf3
-          )
-          soilC <- sum(c_init)
-          return((sum(soilC) - soil$Carbon[1])^2)
-        }
-        inp_calib <- optimize(f = soilC_calib, c(0, 50))$minimum
-        c_init <- as.vector(c_init)
-        fxi_b <-
-          data.frame(sim_period, rep(x[, "baseline"],
-            length.out = length(sim_period)
-          ))
-        model_b <- RothCModel(
-          t = sim_period,
-          c(
-            k.DPM = 10 * trm_b * coeffs$cf4,
-            k.RPM = 0.3 * trm_b * coeffs$cf4,
-            k.BIO = 0.66 * trm_b * coeffs$cf4,
-            k.HUM = 0.02 * trm_b * coeffs$cf4,
-            k.IOM = 0 * trm_b * coeffs$cf4
+  if (is.null(country)) {
+    files <- list.files("inputs_cft")
+    file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "31", "_wth", ".rds")
+    if (any(grepl(file_name, files))) {
+      wth <- readRDS(paste0("inputs_cft/", file_name))
+    } else {
+      wth <-
+        get_wth_power_nasa(
+          lonlat = c(
+            attr(soil, "meta")$Longitude,
+            attr(soil, "meta")$Latitude
           ),
-          C0 = c_init,
+          dates = wth_dates
+        )
+      saveRDS(wth, paste0("inputs_cft/", file_name))
+    }
+  } else {
+    wth <- dsw[[country]]
+  }
+
+  # inorganic Carbon
+  iom <- 0.049 * (soil$Carbon[1]^(1.139))
+
+  # flow rate effects distribution (baseline)
+  fc_b <- fC_crop_retainment(cp_b)
+  ft_b <- fT.RothC(t(wth[, "TS_AV"]))
+  fw_b <- f_moist_rothc(
+    pp = t(wth[, "PRECTOTCORR_AV"]),
+    et = t(wth[, "EVPTRNS_AV"]),
+    s_thick = 30,
+    pclay = mean(soil$ParticleSizeClay[1:3]),
+    pE = 1.0 * coeffs$cf5,
+    soil_cover = cp_b
+  )
+
+  fxi_b <- as.vector(fw_b * ft_b * fc_b)
+  names(fxi_b) <- month.name
+
+
+  # flow rate effects distribution (scenario)
+  fc_s <- fC_crop_retainment(cp_s)
+  ft_s <- fT.RothC(t(wth[, "TS_AV"]))
+  fw_s <- f_moist_rothc(
+    pp = t(wth[, "PRECTOTCORR_AV"]),
+    et = t(wth[, "EVPTRNS_AV"]),
+    s_thick = 30,
+    pclay = mean(soil$ParticleSizeClay[1:3]),
+    pE = 1.0 * coeffs$cf5,
+    soil_cover = cp_s
+  )
+
+  fxi_s <- as.vector(fw_s * ft_s * fc_s)
+  names(fxi_s) <- month.name
+
+  fxi_all <-
+    array(c(fxi_b, fxi_s),
+      dim = c(12, 2),
+      dimnames = list(month.name, c("baseline", "scenario"))
+    )
+
+  run_RothC <-
+    function(x,
+             trm_b,
+             trm_s,
+             inp_s,
+             spin_period,
+             sim_period) {
+      trm_spin <- trm_b
+
+      fxi_calib <-
+        data.frame(spin_period, rep(x[, "baseline"],
+          length.out = length(spin_period)
+        ))
+      soilC_calib <- function(inp_calib) {
+        c_init <<- CeqlRoth(
+          c(
+            k.DPM = 10 * trm_spin * coeffs$cf4,
+            k.RPM = 0.3 * trm_spin * coeffs$cf4,
+            k.BIO = 0.66 * trm_spin * coeffs$cf4,
+            k.HUM = 0.02 * trm_spin * coeffs$cf4,
+            k.IOM = 0 * trm_spin * coeffs$cf4
+          ),
+          C0 = c(
+            DPM = 0,
+            RPM = 0,
+            BIO = 0,
+            HUM = 0,
+            IOM = iom
+          ),
           In = inp_calib,
           clay = mean(soil$ParticleSizeClay[1:3]),
-          xi = fxi_b,
+          xi = fxi_calib,
           DR = 1.44 * coeffs$cf3
         )
-        soilC_b_all_time <- getC(model_b)
-        soilC_b <- as.numeric(tail(soilC_b_all_time, 1))
+        soilC <- sum(c_init)
+        return((sum(soilC) - soil$Carbon[1])^2)
+      }
+      inp_calib <- optimize(f = soilC_calib, c(0, 50))$minimum
+      c_init <- as.vector(c_init)
+      fxi_b <-
+        data.frame(sim_period, rep(x[, "baseline"],
+          length.out = length(sim_period)
+        ))
+      model_b <- RothCModel(
+        t = sim_period,
+        c(
+          k.DPM = 10 * trm_b * coeffs$cf4,
+          k.RPM = 0.3 * trm_b * coeffs$cf4,
+          k.BIO = 0.66 * trm_b * coeffs$cf4,
+          k.HUM = 0.02 * trm_b * coeffs$cf4,
+          k.IOM = 0 * trm_b * coeffs$cf4
+        ),
+        C0 = c_init,
+        In = inp_calib,
+        clay = mean(soil$ParticleSizeClay[1:3]),
+        xi = fxi_b,
+        DR = 1.44 * coeffs$cf3
+      )
+      soilC_b_all_time <- getC(model_b)
+      soilC_b <- as.numeric(tail(soilC_b_all_time, 1))
 
-        if (inp_s == "same_as_base") {
-          inp_s <- 0
-        } else {
-          if (!is.numeric(inp_s)) {
-            stop(
-              "inp_s must be either 'same_as_base' representing a continuation of the
+      if (inp_s == "same_as_base") {
+        inp_s <- 0
+      } else {
+        if (!is.numeric(inp_s)) {
+          stop(
+            "inp_s must be either 'same_as_base' representing a continuation of the
               calibrated input biomass or a number representing the new biomass
               inputs"
-            )
-          }
-        }
-
-        if (fym_s == "same_as_base") {
-          fym_s <- 0
-        } else {
-          if (!is.numeric(fym_s)) {
-            stop(
-              "fym_s must be either 'same_as_base' representing a continuation of the
-              calibrated input biomass or a number representing the additional farm yard manure application"
-            )
-          }
-        }
-
-        fxi_s <-
-          data.frame(sim_period, rep(x[, "scenario"],
-            length.out = length(sim_period)
-          ))
-        model_s <- RothCModel(
-          t = sim_period,
-          c(
-            k.DPM = 10 * trm_s * coeffs$cf4,
-            k.RPM = 0.3 * trm_s * coeffs$cf4,
-            k.BIO = 0.66 * trm_s * coeffs$cf4,
-            k.HUM = 0.02 * trm_s * coeffs$cf4,
-            k.IOM = 0 * trm_s * coeffs$cf4
-          ),
-          C0 = c_init,
-          In = inp_calib + inp_s,
-          FYM = fym_s,
-          clay = mean(soil$ParticleSizeClay[1:3]),
-          xi = fxi_s,
-          DR = 1.44 * coeffs$cf3
-        )
-        soilC_s_all_time <- getC(model_s)
-        soilC_s <- as.numeric(tail(soilC_s_all_time, 1))
-        res <-
-          list(
-            "sc_diff" = sum(soilC_s) - sum(soilC_b),
-            "inp_calib" = inp_calib,
-            "sc_spinup" = c_init,
-            "sc_baseline" = soilC_b_all_time,
-            "sc_scenario" = soilC_s_all_time
           )
-        return(res)
+        }
       }
 
-    RothC_runs <- run_RothC(
-      fxi_all,
-      trm_b = trm_b,
-      trm_s = trm_s,
-      inp_s = inp_s,
-      spin_period = spin_period,
-      sim_period = sim_period
-    )
+      if (fym_s == "same_as_base") {
+        fym_s <- 0
+      } else {
+        if (!is.numeric(fym_s)) {
+          stop(
+            "fym_s must be either 'same_as_base' representing a continuation of the
+              calibrated input biomass or a number representing the additional farm yard manure application"
+          )
+        }
+      }
 
-    end <- Sys.time()
-
-    time <- end - start
-    res <-
-      list(
-        "Ini_SOC" = soil$Carbon[1],
-        "SOC_stock_change" = RothC_runs$sc_diff,
-        "input_calib" = RothC_runs$inp_calib,
-        "Mean_input_scenario" = inp_s,
-        "Longitude_final" = attr(soil, "meta")$Longitude,
-        "Latitude_final" = attr(soil, "meta")$Latitude,
-        "Longitude_init." = lonlat[1],
-        "Longitude_init." = lonlat[2],
-        "Soil_type" = attr(soil, "meta")$SoilType,
-        "Mean_30cm_clay_%" = mean(soil$ParticleSizeClay[1:3]),
-        "Mean_TS" = colMeans(wth[, "TS_AV"]),
-        "Mean_PR" = colMeans(wth[, "PRECTOTCORR_AV"]),
-        "Mean_ET" = colMeans(wth[, "EVPTRNS_AV"]),
-        "Unit_SOC" = "",
-        "time_elapsed" = time,
-        "soilC_baseline" = RothC_runs$sc_baseline,
-        "soilC_scenario" = RothC_runs$sc_scenario,
-        "coefficients" = coeffs
+      fxi_s <-
+        data.frame(sim_period, rep(x[, "scenario"],
+          length.out = length(sim_period)
+        ))
+      model_s <- RothCModel(
+        t = sim_period,
+        c(
+          k.DPM = 10 * trm_s * coeffs$cf4,
+          k.RPM = 0.3 * trm_s * coeffs$cf4,
+          k.BIO = 0.66 * trm_s * coeffs$cf4,
+          k.HUM = 0.02 * trm_s * coeffs$cf4,
+          k.IOM = 0 * trm_s * coeffs$cf4
+        ),
+        C0 = c_init,
+        In = inp_calib + inp_s,
+        FYM = fym_s,
+        clay = mean(soil$ParticleSizeClay[1:3]),
+        xi = fxi_s,
+        DR = 1.44 * coeffs$cf3
       )
-    return(res)
-  }
+      soilC_s_all_time <- getC(model_s)
+      soilC_s <- as.numeric(tail(soilC_s_all_time, 1))
+      res <-
+        list(
+          "sc_diff" = sum(soilC_s) - sum(soilC_b),
+          "inp_calib" = inp_calib,
+          "sc_spinup" = c_init,
+          "sc_baseline" = soilC_b_all_time,
+          "sc_scenario" = soilC_s_all_time
+        )
+      return(res)
+    }
+
+  RothC_runs <- run_RothC(
+    fxi_all,
+    trm_b = trm_b,
+    trm_s = trm_s,
+    inp_s = inp_s,
+    spin_period = spin_period,
+    sim_period = sim_period
+  )
+
+  end <- Sys.time()
+
+  time <- end - start
+  res <-
+    list(
+      "Ini_SOC" = soil$Carbon[1],
+      "SOC_stock_change" = RothC_runs$sc_diff,
+      "input_calib" = RothC_runs$inp_calib,
+      "Mean_input_scenario" = inp_s,
+      "Longitude_final" = attr(soil, "meta")$Longitude,
+      "Latitude_final" = attr(soil, "meta")$Latitude,
+      "Longitude_init." = lonlat[1],
+      "Longitude_init." = lonlat[2],
+      "Soil_type" = attr(soil, "meta")$SoilType,
+      "Mean_30cm_clay_%" = mean(soil$ParticleSizeClay[1:3]),
+      "Mean_TS" = colMeans(wth[, "TS_AV"]),
+      "Mean_PR" = colMeans(wth[, "PRECTOTCORR_AV"]),
+      "Mean_ET" = colMeans(wth[, "EVPTRNS_AV"]),
+      "Unit_SOC" = "",
+      "time_elapsed" = time,
+      "soilC_baseline" = RothC_runs$sc_baseline,
+      "soilC_scenario" = RothC_runs$sc_scenario,
+      "coefficients" = coeffs
+    )
+  return(res)
+}

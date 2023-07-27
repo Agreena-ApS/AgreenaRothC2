@@ -12,7 +12,7 @@
 #' @export
 #'
 
-management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), write = FALSE,  cf1 = 1, cf2 = 1, cf3 = 1) {
+management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), write = FALSE, cf1 = 1, cf2 = 1, cf3 = 1) {
   if (!dir.exists("inputs")) {
     dir.create("inputs")
   }
@@ -21,12 +21,12 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
     stop("Define folder with calibration assumptions tables")
   }
 
-  substrRight <- function(x, n){
-    substr(x, nchar(x)-n+1, nchar(x))
+  substrRight <- function(x, n) {
+    substr(x, nchar(x) - n + 1, nchar(x))
   }
 
   # files <- list.files("inputs")
-  id <- substr(digest::sha1(mgmt_file),1,10)
+  id <- substr(digest::sha1(mgmt_file), 1, 10)
   file_name <- paste0(mgmt_file$Latitude, "_", mgmt_file$Longitude, "_", mgmt_file$Field_ID, "_", "mgmt_", flag, "_", id, ".csv")
   # if (any(grepl(file_name, files)) & use_cache) {
   #   res <- read.csv(paste0(getwd(), "/inputs/", file_name))
@@ -69,7 +69,8 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
     unlist() %>%
     str_split(",") %>%
     unlist() %>%
-    as.numeric() %>% suppressWarnings()
+    as.numeric() %>%
+    suppressWarnings()
   if (length(yields) != length(crops)) stop("Number of yields and crops are different")
   cropsdf$annual_yield <- rep_len(rep(yields, each = 12), length.out = length(sim_period))
 
@@ -93,14 +94,23 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
     unlist() %>%
     str_split(",") %>%
     unlist() %>%
-    as.numeric() %>% suppressWarnings()
-    if(any(is.na(fym))){ fym <- rep(0, length(yields)) } else { fym <- fym }
-    if(is.null(fym)){ fym <- rep(0, length(yields)) } else { fym <- fym }
+    as.numeric() %>%
+    suppressWarnings()
+  if (any(is.na(fym))) {
+    fym <- rep(0, length(yields))
+  } else {
+    fym <- fym
+  }
+  if (is.null(fym)) {
+    fym <- rep(0, length(yields))
+  } else {
+    fym <- fym
+  }
 
   # if (length(yields) != length(fym)) stop("Number of yields and fym are different")
   cropsdf$fym <- rep_len(rep(fym, each = 12), length.out = length(sim_period))
 
-  #from Agreena to CFT crops
+  # from Agreena to CFT crops
   crops <- agreena2cft(crops)
 
   # biomass distribution over the year
@@ -113,9 +123,18 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
     unlist() %>%
     str_split(",") %>%
     unlist() %>%
-    as.numeric() %>% suppressWarnings()
-    if(any(is.na(bio_mass_input))){ bio_mass_input <- rep(0, length(crops)) } else { bio_mass_input <- bio_mass_input }
-    if(is.null(bio_mass_input)){ bio_mass_input <- rep(0, length(crops)) } else { bio_mass_input <- bio_mass_input }
+    as.numeric() %>%
+    suppressWarnings()
+  if (any(is.na(bio_mass_input))) {
+    bio_mass_input <- rep(0, length(crops))
+  } else {
+    bio_mass_input <- bio_mass_input
+  }
+  if (is.null(bio_mass_input)) {
+    bio_mass_input <- rep(0, length(crops))
+  } else {
+    bio_mass_input <- bio_mass_input
+  }
 
   # if (length(crops) != length(bio_mass_input)) stop("Number of crops and biomass inputs are different")
   cropsdf$bio_mass_input <- rep_len(rep(bio_mass_input, each = 12), length.out = length(sim_period))
@@ -152,7 +171,9 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
   cropsdf$cf2 <- cf2
   cropsdf$cf3 <- cf3
 
-  if(write == TRUE) {write.csv(cropsdf, paste0("inputs/", file_name))}
+  if (write == TRUE) {
+    write.csv(cropsdf, paste0("inputs/", file_name))
+  }
 
   return(cropsdf)
 }
@@ -204,8 +225,3 @@ management_variables <- function(mgmt_file, flag = c("Treatment", "Control"), wr
 #             "Notavailable" = 1))
 # # write.csv(tillage_convert, "/Users/marcospaulopedrosaalves/Documents/Git/AgreenaRothC/data/tillage_convert.csv")
 # # usethis::use_data(tillage_convert, overwrite = T)
-
-
-
-
-

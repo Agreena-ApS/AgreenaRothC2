@@ -22,7 +22,7 @@ tillage_conversion <- function(tillage) {
   tillage_convert <- load_tillage_convert()
   tillage <- gsub(" ", "", tillage) %>% toupper()
   till_cr <- match(tillage, tillage_convert$Tillage_Type) %>%
-    tillage_convert[.,] %>%
+    tillage_convert[., ] %>%
     pull() %>%
     unlist()
   return(till_cr)

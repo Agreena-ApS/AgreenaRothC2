@@ -5,12 +5,11 @@ agreena2cft <- function(crops) {
   cropname <- trimws(crops, which = "both") %>% toupper()
 
 
-  cropcft <- crop_names[match(crops, crop_names$Agreena_crop_IDENTIFIER),"coolfarm_name"]
+  cropcft <- crop_names[match(crops, crop_names$Agreena_crop_IDENTIFIER), "coolfarm_name"]
 
   # crops_pos <- which(crop_names$Agreena_crop_name %in% cropname)
   # cropcft <- crop_names[crops_pos,"coolfarm_name"]
   return(unlist(cropcft))
-
 }
 
 

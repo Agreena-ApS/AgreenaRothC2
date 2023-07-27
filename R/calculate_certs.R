@@ -25,7 +25,6 @@
 #' result <- calculate_certs(files)
 #' print(result)
 #'
-#'
 #' @import dplyr
 #' @export
 
@@ -34,7 +33,6 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
                             buffer = 0.2,
                             premium = 0.1,
                             add_fallow_fields = TRUE) {
-
   # Call the bind_and_merge function to get the merged data
   merged <- bind_and_merge(files)
 
@@ -52,7 +50,7 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
   joined_calc_mutate <- merged %>%
     mutate(
       # Fuel emissions reductions (tCO2e/ha)
-      fuel_reductions =  baseline_fuel_emissions - actual_fuel_emissions,
+      fuel_reductions = baseline_fuel_emissions - actual_fuel_emissions,
 
       # Soil N2O emissions reductions (tCO2e/ha)
       soil_n2o_reductions = baseline_soil_n2o_emissions - actual_soil_n2o_emissions,
@@ -89,7 +87,7 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
       reductions_minus_uncertainty_tCha = total_reductions_tCha * (1 - uncertain_uncertanty_deduction),
 
       # Emissions removals minus uncertainty deduction (tCO2e)
-      removals_minus_uncertainty_area = total_removals_area  * (1 - uncertain_uncertanty_deduction),
+      removals_minus_uncertainty_area = total_removals_area * (1 - uncertain_uncertanty_deduction),
 
       # Emissions reductions minus uncertainty deduction (tCO2e)
       reductions_minus_uncertainty_area = total_reductions_area * (1 - uncertain_uncertanty_deduction),

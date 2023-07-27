@@ -10,7 +10,7 @@
 #' @import SoilR
 
 
-ini_carbon_pools <- function(ini_carbon, env_clay,xi, cf4) {
+ini_carbon_pools <- function(ini_carbon, env_clay, xi, cf4) {
   iom <- 0.049 * (ini_carbon^(1.139))
   soilC_calib <- function(inp_calib) {
     c_init <<- CeqlRoth(

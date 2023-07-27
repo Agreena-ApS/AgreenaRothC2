@@ -62,10 +62,10 @@ pre_field_data_bio <- function(field_data) {
         0
       )
     ) * add_fym_field) %>%
-    mutate(add_fym_inpts = if_else(is.na(add_fym_inpts), 0, add_fym_inpts),
-           add_fym_field = if_else(is.na(add_fym_field), 0, add_fym_field))
+    mutate(
+      add_fym_inpts = if_else(is.na(add_fym_inpts), 0, add_fym_inpts),
+      add_fym_field = if_else(is.na(add_fym_field), 0, add_fym_field)
+    )
 
   return(field_data)
 }
-
-

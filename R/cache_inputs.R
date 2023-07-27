@@ -9,7 +9,7 @@ load_base_yields <- function() {
 #' @export
 load_resid_mgmt <- function() {
   if (!exists("resid_mgmt")) {
-    resid_mgmt <<- read.csv(file.path(getOption("param_inputs"), "resid_mgmt.csv"),row.names = 1)
+    resid_mgmt <<- read.csv(file.path(getOption("param_inputs"), "resid_mgmt.csv"), row.names = 1)
   }
   return(resid_mgmt)
 }

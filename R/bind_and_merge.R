@@ -30,19 +30,34 @@ bind_and_merge <- function(files) {
       stop("Unsupported file type")
     )
   }
-  rothc_data <- bind_rows(lapply(files$RothC, read_file))
-  ipcc_data <- bind_rows(lapply(files$ipcc, read_file))
-  field_data <- bind_rows(lapply(files$field_data, read_file))
-  if (nrow(rothc_data) != nrow(ipcc_data) | nrow(rothc_data) != nrow(field_data)) {
-    warning("The number of rows in the data sets are different.")
+  
+  data_files <- list()
+  for (i in 1:length(files)) {
+    data_files[[names(files[i])]] <- bind_rows(lapply(files[[i]], read_file))
   }
-  merged_data <- full_join(rothc_data, ipcc_data, by = "field_id")
-  merged_data <- full_join(merged_data, field_data, by = "field_id")
-  missing_field_ids <- list(
-    rothc_only = setdiff(rothc_data$field_id, union(ipcc_data$field_id, field_data$field_id)),
-    ipcc_only = setdiff(ipcc_data$field_id, union(rothc_data$field_id, field_data$field_id)),
-    field_only = setdiff(field_data$field_id, union(rothc_data$field_id, ipcc_data$field_id))
-  )
-  attr(merged_data, "missing_field_ids") <- missing_field_ids
+  
+  nrows_data <- sapply(data_files, nrow)
+  names_data <- names(data_files)
+  if (var(nrows_data)>0) {
+    warning(paste("The number of rows in the data sets are different.", paste(names_data,"=", nrows_data, collapse = ", ")))
+  }
+  
+  # Function to perform left join between two data frames
+  left_join_dataframes <- function(df1, df2) {
+    merge(df1, df2, by = "field_id", all = TRUE)
+  }
+  
+  # Use Reduce() to perform left join on all data frames in the list
+  merged_data <- Reduce(left_join_dataframes, data_files)
+  
+  
+  # merged_data <- full_join(rothc_data, ipcc_data, by = "field_id")
+  # merged_data <- full_join(merged_data, field_data, by = "field_id")
+  # missing_field_ids <- list(
+  #   rothc_only = setdiff(rothc_data$field_id, union(ipcc_data$field_id, field_data$field_id)),
+  #   ipcc_only = setdiff(ipcc_data$field_id, union(rothc_data$field_id, field_data$field_id)),
+  #   field_only = setdiff(field_data$field_id, union(rothc_data$field_id, ipcc_data$field_id))
+  # )
+  # attr(merged_data, "missing_field_ids") <- missing_field_ids
   return(merged_data)
 }

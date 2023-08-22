@@ -54,12 +54,13 @@ AgreenaProgramme2 <- function(lonlat,
     )
     return(y)
   }
-
+  
+  # Until when did you have cover crops?
   cover_crop_convertion <- function(x) {
     y <- switch(x,
-      "winter" = c(0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+      "spring" = c(0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1),
       "none" =   c(0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0),
-      "spring" = c(0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0),
+      "winter" = c(0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0),
       "catch" =  c(1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1)
     )
     return(y)

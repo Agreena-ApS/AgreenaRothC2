@@ -10,19 +10,23 @@ calculate_certs(
   fees = 0.15,
   buffer = 0.2,
   premium = 0.1,
+  uncertainty_rem = 0.15,
+  uncertainty_red = 0,
   add_fallow_fields = TRUE
 )
 }
 \arguments{
 \item{files}{A named list of files containing RothC model outputs, IPCC model outputs, and field data.}
 
-\item{uncertain_uncertanty_deduction}{A numeric value for the uncertainty deduction factor (default is 0.0896).}
-
 \item{fees}{A numeric value for the fees deduction percentage (default is 0.15).}
 
 \item{buffer}{A numeric value for the buffer pool deduction percentage (default is 0.2).}
 
 \item{premium}{A numeric value for the premium payment percentage (default is 0.1).}
+
+\item{uncertainty_rem}{A numeric value for the uncertainty deduction factor for removals (default is 0.15).}
+
+\item{uncertainty_red}{A numeric value for the uncertainty deduction for emissions reductions (default is 0)}
 
 \item{add_fallow_fields}{A logical value indicating whether to add an attribute to the data frame with the field_id of rows with NA in actual_crop_name (default is TRUE).}
 }

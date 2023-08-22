@@ -39,23 +39,19 @@
 summarize_and_export <- function(data,
                                  file_name_original,
                                  file_name_summarized) {
-  # Load the dplyr package for data manipulation
-  library(dplyr)
 
   # Summarize the calculations by user_id
   summarized_calc <- data %>%
     group_by(user_id) %>%
-    drop_na(total_removals_tCha) %>%
+    drop_na(VCU_field_eq66) %>%
     summarise(
       total_has = sum(field_size_ha),
-      total_certs = sum(total_certs),
-      total_certs_ha = mean(total_certs_ha),
-      net_certs_ha = mean(net_certs_ha),
-      buffer = sum(buffer),
-      fees = sum(fees),
-      net_certs = sum(net_certs),
+      VCU_User = sum(VCU_field_eq66),
+      buffer_User = sum(buffer_field),
+      fees_User = sum(fees),
+      net_certs_user = sum(net_certs),
       premium = sum(premium),
-      share_removals_percent = (sum(removals_minus_uncertainty_area) / (sum(removals_minus_uncertainty_area) + sum(reductions_minus_uncertainty_area))) * 100
+      share_removals_percent_all_users = (sum(Erem_eq38_field) / sum(ERR_eq39_field)) * 100
     )
 
   # Load the writexl package for exporting to Excel

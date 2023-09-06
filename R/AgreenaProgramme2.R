@@ -16,6 +16,7 @@
 #' @param soiltype argument necessary if \code{soil_data} is numerical
 #' @param soil_data Either "lucas", "isric" or a number describing SOM in %
 #' @param calibrated Use calibation factors: TRUE or FALSE
+#' @param SOC_limit Limit of SOC in tC/ha (this is necessary to avoid areas where SOC from forest could eventually be selected)
 #' @return returns a data frame with average (AV) and standard deviation (SD)
 #' of surface temperature (TS), bias corrected precipitation (PRECTOTCORR) and
 #' Evapotranspiration Energy Flux (EVPTRNS).
@@ -41,7 +42,8 @@ AgreenaProgramme2 <- function(lonlat,
                               till_s = c("Reduced tillage", "Conventional tillage", "No tillage", "Not available"),
                               soiltype = "Clay",
                               soil_data = "lucas",
-                              calibrated = TRUE) {
+                              calibrated = TRUE,
+                              SOC_limit = 200) {
   set.seed(123)
   start <- Sys.time()
 
@@ -146,6 +148,8 @@ AgreenaProgramme2 <- function(lonlat,
     }
   }
 
+  soil$Carbon <- pmin(soil$Carbon, SOC_limit)
+  
   files <- list.files("inputs_cft")
   file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_coeffs", ".rds")
   if (calibrated) {

@@ -91,7 +91,9 @@ pre_field_data_fert <- function(actuals_year, N_limit = 300) {
     select(
       "field_id","actual_fertilisers_mixed", contains("actual_fertiliser_id_"),
       contains("fertiliser_actual_application_rate"),
-      contains("fertiliser_actual_fertiliser_name")
+      contains("fertiliser_actual_fertiliser_name"),
+      contains("fertiliser_actual_mode"),
+      contains("fertiliser_actual_nitrogen_kg_ha")
     )
   
   # testing what happens where there is an Synt fertlizer in the mix
@@ -100,44 +102,62 @@ pre_field_data_fert <- function(actuals_year, N_limit = 300) {
   # fert_data[fert_data$field_id == 43333,"fertiliser_actual_application_rate_07" ] = 400
   
   fert_names <- pivot_longer(fert_data,
-    cols = contains("fertiliser_actual_fertiliser_name_0"),
-    names_to = letters[1:5],
-    names_sep = "_",
-    values_to = "name"
-  ) %>%
-    select("field_id", "e", "name")
+                             cols = contains("fertiliser_actual_fertiliser_name_0"),
+                             names_to = letters[1:5],
+                             names_sep = "_",
+                             values_to = "name"
+  ) %>% select("field_id", "e", "name")
+  
+  fert_modes <- pivot_longer(fert_data,
+                             cols = contains("fertiliser_actual_mode"),
+                             names_to = letters[2:5],
+                             names_sep = "_",
+                             values_to = "mode"
+  ) %>% select("field_id", "e", "mode")
+  
   fert_rates <- pivot_longer(fert_data,
-    cols = contains("fertiliser_actual_application_rate_0"),
-    names_to = letters[1:5],
-    names_sep = "_",
-    values_to = "Application_rate"
+                             cols = contains("fertiliser_actual_application_rate_0"),
+                             names_to = letters[1:5],
+                             names_sep = "_",
+                             values_to = "Application_rate"
   ) %>%
     select("field_id", "e", "Application_rate")
+  
+  fert_Nrates <- pivot_longer(fert_data,
+                              cols = contains("fertiliser_actual_nitrogen"),
+                              names_to = letters[1:6],
+                              names_sep = "_",
+                              values_to = "N_application"
+  ) %>%
+    select("field_id", "f", "N_application")
+  
   fert_id <- pivot_longer(fert_data,
-    cols = contains("fertiliser_actual_fertiliser_id"),
-    names_to = letters[1:5],
-    names_sep = "_",
-    values_to = "fert_id"
+                          cols = contains("fertiliser_actual_fertiliser_id"),
+                          names_to = letters[1:5],
+                          names_sep = "_",
+                          values_to = "fert_id"
   ) %>%
     select("field_id", "e", "fert_id")
+  
   fert_long <- left_join(fert_id, fert_rates, by = c("field_id", "e")) %>%
     left_join(fert_names, by = c("field_id", "e")) %>%
-    drop_na()
+    left_join(fert_modes, by = c("field_id", "e")) %>%
+    left_join(fert_Nrates, by = c("field_id", "e" = "f")) %>%
+    drop_na(mode)
   
   fert_long$n_rate <- fert_long %>%
     left_join(org_c, by = c("fert_id" = "id")) %>%
     mutate(nitro_content = ifelse(is.na(nitro_content), 100, nitro_content)) %>% 
     pull(nitro_content)
   
-  synt_fert <- !(unique(fert_long$fert_id) %in% org_c$id)
-  
-  if(any(synt_fert)){
-    message(paste("Synthetic fertilizers:", unique(fert_long$name)[synt_fert]))
-  }
 
+# Parei aqui, continuar segunda abrir aba fert_long
+  fert_long <- fert_long %>% mutate(name = ifelse(mode == "synthetic","synthetic", name), 
+                                    Application_rate = ifelse(mode == "synthetic", N_application,Application_rate))
+  
+  
 #=================
 # Recalculate the application rates based on N content
-  
   new_application_rates <- fert_long %>%
     mutate(add_N_field = ((n_rate / 100) * Application_rate)) %>%
     # group_by(field_id, fert_id, e) %>%

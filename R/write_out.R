@@ -49,11 +49,13 @@ write_out <- function(out, field_data) {
   
   # Inner join with field_data to add 'field_size_ha' column
   out <- dplyr::inner_join(as.data.frame(out), field_data[,c("field_id", "field_size_ha")], by = "field_id")
-  out$co2_removals_total <- out$field_size_ha * out$co2_removals
+  out$co2_removals_total <- out$field_size_ha * out$co2_removals_all_years_last_month
+  
+  out <- as_tibble(out)
   
   # Pivot to get wide format
-  wide_out <- tidyr::pivot_wider(as.data.frame(out)[,c(1,2,3)], names_from = year, values_from = co2_removals)
-  wide_out_field_avg <- tidyr::pivot_wider(as.data.frame(out)[,c(1,2,5)], names_from = year, values_from = co2_removals_total) %>% select(matches("[0-9]")) %>% colSums()
+  wide_out <- out %>% select(field_id,year,co2_removals_all_years_last_month) %>% tidyr::pivot_wider(names_from = year, values_from = co2_removals_all_years_last_month)
+  wide_out_field_avg <- out %>% select(field_id,year,co2_removals_total) %>%  tidyr::pivot_wider(names_from = year, values_from = co2_removals_total) %>% select(matches("[0-9]")) %>% colSums()
   names(wide_out) <- c("field_id", 2022:2041)
   names(wide_out_field_avg) <- c(2022:2041)
   wide_out_field_avg <- as.data.frame(wide_out_field_avg)

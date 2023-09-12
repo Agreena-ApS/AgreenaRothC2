@@ -17,6 +17,7 @@
 #' @param soil_data Either "lucas", "isric" or a number describing SOM in %
 #' @param calibrated Use calibation factors: TRUE or FALSE
 #' @param SOC_limit Limit of SOC in tC/ha (this is necessary to avoid areas where SOC from forest could eventually be selected)
+#' @param cached_files Loaded chached files in list forma with item names equal file names
 #' @return returns a data frame with average (AV) and standard deviation (SD)
 #' of surface temperature (TS), bias corrected precipitation (PRECTOTCORR) and
 #' Evapotranspiration Energy Flux (EVPTRNS).
@@ -43,10 +44,13 @@ AgreenaProgramme2 <- function(lonlat,
                               soiltype = "Clay",
                               soil_data = "lucas",
                               calibrated = TRUE,
-                              SOC_limit = 200) {
+                              SOC_limit = 200, 
+                              cached_files = NULL) {
   set.seed(123)
   start <- Sys.time()
+    
 
+  
   tillage_conversion <- function(x) {
     y <- switch(x,
       "Conventional tillage" = 1,
@@ -103,10 +107,9 @@ AgreenaProgramme2 <- function(lonlat,
   }
 
   if (soil_data == "isric") {
-    files <- list.files("inputs_cft")
     file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_soil", ".rds")
-    if (any(grepl(file_name, files))) {
-      soil <- readRDS(paste0("inputs_cft/", file_name))
+    if (file_name %in% names(cached_files)) {
+      soil <- cached_files[[file_name]]
     } else {
       soil <-
         get_isric_soil_profile_rothc(lonlat,
@@ -150,11 +153,10 @@ AgreenaProgramme2 <- function(lonlat,
 
   soil$Carbon <- pmin(soil$Carbon, SOC_limit)
   
-  files <- list.files("inputs_cft")
   file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_coeffs", ".rds")
   if (calibrated) {
-    if (any(grepl(file_name, files))) {
-      coeffs <- readRDS(paste0("inputs_cft/", file_name))
+    if (file_name %in% names(cached_files)) {
+      coeffs <- cached_files[[file_name]]
       if (is.null(coeffs)) {
         coeffs <- get_coeffs(attr(soil, "meta")$Longitude, attr(soil, "meta")$Latitude)
         if (is.null(coeffs)) {
@@ -182,10 +184,9 @@ AgreenaProgramme2 <- function(lonlat,
 
 
   if (is.null(country)) {
-    files <- list.files("inputs_cft")
     file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "31", "_wth", ".rds")
-    if (any(grepl(file_name, files))) {
-      wth <- readRDS(paste0("inputs_cft/", file_name))
+    if (file_name %in% names(cached_files)) {
+      wth <- cached_files[[file_name]]
     } else {
       wth <-
         get_wth_power_nasa(

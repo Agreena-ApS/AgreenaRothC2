@@ -17,7 +17,8 @@ AgreenaProgramme2(
   soiltype = "Clay",
   soil_data = "lucas",
   calibrated = TRUE,
-  SOC_limit = 200
+  SOC_limit = 200,
+  cached_files = NULL
 )
 }
 \arguments{
@@ -48,6 +49,8 @@ single value is passed the whole period will be treated homogeneously.}
 \item{calibrated}{Use calibation factors: TRUE or FALSE}
 
 \item{SOC_limit}{Limit of SOC in tC/ha (this is necessary to avoid areas where SOC from forest could eventually be selected)}
+
+\item{cached_files}{Loaded chached files in list forma with item names equal file names}
 }
 \value{
 returns a data frame with average (AV) and standard deviation (SD)

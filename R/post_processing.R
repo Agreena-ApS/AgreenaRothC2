@@ -10,7 +10,13 @@ post_processing <- function(out, type = "payout", conversion = 44 / 12) {
     #   mean()
     # year_intpl <- (s_ly - b_ly) / (nrow(out$soilC_scenario) / 12)
 
-
+    s_ly <- out$soilC_scenario[nrow(out$soilC_scenario), ] - out$soilC_scenario[1, ]
+    s_ly <- sum(s_ly)
+    
+    b_ly <- out$soilC_baselineout[nrow(out$soilC_baselineout), ] - out$soilC_baselineout[1, ]
+    b_ly <- sum(b_ly)
+    year_intpl <- (s_ly - b_ly) / (nrow(out$soilC_scenario) / 12)
+  
     # s_fy <- out$soilC_scenario[1:12, ] |>
     #   rowSums() |>
     #   mean()
@@ -64,7 +70,9 @@ post_processing <- function(out, type = "payout", conversion = 44 / 12) {
     out <- list(
          "all_years_last_month" = year_mean_last_month * conversion,
          "all_years_12m_avg" = year_mean_12m_avg * conversion,
-         "n_years" = 1:years)
+         "year_intpl" = year_intpl,
+         "n_years" = 1:years
+         )
     
     # out <- data.frame("year_intpl" = year_intpl * conversion, "first_year" = year * conversion)
     # attr(out, "all_years") <- year_mean * conversion

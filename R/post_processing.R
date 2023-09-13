@@ -70,7 +70,7 @@ post_processing <- function(out, type = "payout", conversion = 44 / 12) {
     out <- list(
          "all_years_last_month" = year_mean_last_month * conversion,
          "all_years_12m_avg" = year_mean_12m_avg * conversion,
-         "year_intpl" = year_intpl,
+         "year_intpl" = year_intpl * conversion,
          "n_years" = 1:years
          )
     

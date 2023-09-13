@@ -35,14 +35,14 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
                             premium = 0.1,
                             uncertainty_rem = 0.15,
                             uncertainty_red = 0,
-                            add_fallow_fields = TRUE) {
+                            add_fallow_fields = TRUE, accounting_variable) {
   # Call the bind_and_merge function to get the merged data
   merged <- bind_and_merge(files)
   
   # backward compatibility
-  if (exists("first_year", where = merged)) {
-    names(merged)[grep("first_year", names(merged))] <- "co2_removals"
-  }
+  # if (exists("first_year", where = merged)) {
+  #   names(merged)[grep("first_year", names(merged))] <- "co2_removals"
+  # }
   
   Fallow_fields <- NULL
 
@@ -73,7 +73,7 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
       Ered_eq37_field = (delta_fuel_emissions + delta_soil_n2o_emissions * (1 - uncertainty_deduction_red)) * field_size_ha,
 
       # Total emissions removals (tCO2e)
-      Erem_eq38_field = (co2_removals_all_years_last_month - total_leakage_tC_ha) * (1 - uncertainty_deduction_rem) * field_size_ha,
+      Erem_eq38_field = (!!as.name(accounting_variable) - total_leakage_tC_ha) * (1 - uncertainty_deduction_rem) * field_size_ha,
 
       # Estimated net GHG emissions reductions and removals
       ERR_eq39_field = Ered_eq37_field + Erem_eq38_field,

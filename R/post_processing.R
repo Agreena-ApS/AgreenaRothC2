@@ -5,7 +5,7 @@
 #'
 #' @param out Object returned from [AgreenaProgramm2].
 #' @param type String: Currently ununsed.
-#' @param conversion Numeric: Conversion factor for C =>-CO2e conversion.
+#' @param conversion Numeric: Conversion factor for C => CO2e conversion.
 #'
 #' @export
 post_processing <- function(out, type = "payout", conversion = 44 / 12) {

@@ -29,6 +29,11 @@
 
 write_out <- function(out, field_data) {
   
+  saveRDS(out, file.path(
+    getOption("output_version_folder"),
+    paste0("output_raw_", getOption("version"), ".rds")
+  ))
+  
   out_current_harvest_year <- as.data.frame(out) %>% dplyr::filter(year == 1)
   
   write.csv(

@@ -33,7 +33,7 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
                             fees = 0.15,
                             buffer = 0.2,
                             premium = 0.1,
-                            uncertainty_rem = 0.15,
+                            uncertainty_rem = 0.15178495,
                             uncertainty_red = 0,
                             add_fallow_fields = TRUE, accounting_variable) {
   # Call the bind_and_merge function to get the merged data
@@ -68,10 +68,20 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
       
       # Uncertainty deduction factor for emissions reductions
       uncertainty_deduction_red = uncertainty_red,
+      
+      # Final SOC
+      final_SOC = ini_SOC + !!as.name(accounting_variable),
 
       # Total emissions reductions (tCO2e)
       Ered_eq37_field = (delta_fuel_emissions + delta_soil_n2o_emissions * (1 - uncertainty_deduction_red)) * field_size_ha,
-
+      
+      # Total emissions reductions (tCO2e)
+      total_leakage_tC_ha = total_leakage_tC/field_size_ha,
+      
+      #fixing nas, nulls and nans
+      
+      total_leakage_tC_ha = ifelse(is.na(total_leakage_tC_ha),0,total_leakage_tC_ha),
+      
       # Total emissions removals (tCO2e)
       Erem_eq38_field = (!!as.name(accounting_variable) - total_leakage_tC_ha) * (1 - uncertainty_deduction_rem) * field_size_ha,
 

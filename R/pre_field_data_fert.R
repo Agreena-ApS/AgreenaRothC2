@@ -160,14 +160,11 @@ pre_field_data_fert <- function(actuals_year, N_limit = 300) {
 # Recalculate the application rates based on N content
   new_application_rates <- fert_long %>%
     mutate(add_N_field = ((n_rate / 100) * Application_rate)) %>%
-    # group_by(field_id, fert_id, e) %>%
-    # summarize(add_N_field = sum(n_added), Application_rate = Application_rate, n = n()) %>%
     group_by(field_id) %>%
     mutate(total_add_N_field = sum(add_N_field)) %>%
     mutate(share_contribution = add_N_field / total_add_N_field) %>%
     mutate(excess_diff = ifelse(total_add_N_field > N_limit, total_add_N_field - N_limit, 0)) %>%
     mutate(scaling_factor = ifelse(excess_diff > 0, (total_add_N_field - excess_diff) / total_add_N_field, 1)) %>%
-    # mutate(Application_rate_scaled = ifelse(total_add_N_field > N_limit, Application_rate * scaling_factor, Application_rate)) %>%
     mutate(Application_rate_scaled = Application_rate * scaling_factor)
 #=================
   

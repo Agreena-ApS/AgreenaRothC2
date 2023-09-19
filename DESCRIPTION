@@ -1,6 +1,6 @@
 Package: AgreenaRothC2
 Title: What the Package Does (One Line, Title Case)
-Version: 0.1.5
+Version: 0.1.6
 Authors@R: 
     person("Marcos", "Alves", , "marcos.alves@agreena.com", role = c("aut", "cre"))
 Description: Group of convenience functions to run RothC from SoilR.

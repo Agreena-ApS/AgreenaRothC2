@@ -98,7 +98,6 @@ post_processing <-
     #      "year_intpl" = year_intpl * conversion,
     #      "n_years" = 1:years
     #      )
-    out <- cbind("year" = 1:years, out * conversion)
+    out <- cbind("year" = 1:(nrow(out$soilC_scenario)/12), out * conversion)
     return(out)
-    
   }

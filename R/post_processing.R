@@ -45,7 +45,7 @@ post_processing <-
       # Convert the list to a data frame and return it
       return(data.frame(results))
     }
-    out <- calc_interpolations(out, seq(1:20))
+    x <- calc_interpolations(out, seq(1:20))
     
     # # Create an empty plot
     # plot(a[,1], xlim = c(1, nrow(results)), ylim = range(results), xlab = "Years", ylab = "Removals (tCO2eq/ha)", main = "VCS Payment Schemes", type = "l")
@@ -98,6 +98,6 @@ post_processing <-
     #      "year_intpl" = year_intpl * conversion,
     #      "n_years" = 1:years
     #      )
-    out <- cbind("year" = 1:(nrow(out$soilC_scenario)/12), out * conversion)
-    return(out)
+    x <- cbind("year" = 1:(nrow(out$soilC_scenario)/12), x * conversion)
+    return(x)
   }

@@ -22,10 +22,10 @@ post_processing <-
       
       for (j in 1:length(interp_interval)) {
         interp_interval_months <- 12 * interp_interval[j]
-        # Check if interp_interval[j] is a multiple of length(monthly_values) 
-        if (length(monthly_values) %% interp_interval_months == 0) {
+        # Check if interp_interval[j] is a multiple of length(monthly_values_s) 
+        if (length(monthly_values_s) %% interp_interval_months == 0) {
           num_intervals <-
-            length(monthly_values) / interp_interval_months
+            length(monthly_values_s) / interp_interval_months
           average_changes <- numeric(num_intervals)
           for (i in 1:num_intervals) {
             start_index <- (i - 1) * interp_interval_months + 1

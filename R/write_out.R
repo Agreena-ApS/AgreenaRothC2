@@ -1,9 +1,9 @@
 #' Write out data to CSV files with CO2 SOC removals information.
 #'
-#' This function takes a data frame 'out', which contains information about CO2 
+#' This function takes a data frame 'out', which contains information about CO2
 #' SOC (Soil Organic Carbon) removals for various fields over multiple years.
 #' It performs additional data transformations and writes the results to multiple CSV files:
-#' 
+#'
 #'    1. A CSV file containing CO2 SOC removals per year per field during the project duration.
 #'    2. A CSV file containing the total CO2 SOC removals per year across all fields during the project duration.
 #'    3. A CSV file containing CO2 SOC removals per field for the harvest year (and a copy in .rds)
@@ -19,15 +19,20 @@
 #' @return This function doesn't return anything directly, but it writes the processed data to CSV files.
 #'
 #' @import tidyverse
-#' @import dplyr 
-#' @import tidyr 
+#' @import dplyr
+#' @import tidyr
 #' @export
 #'
 #' @examples
 #' # Example usage:
 #' # write_out(out_data, field_data)
-
-write_out <- function(out, field_data) {
+write_out <- function(out, field_data, sim_period) {
+  
+  start_year <- as.numeric(format(as.Date(sim_period[1], format = "%Y-%m-%d"), "%Y"))
+  end_year <- as.numeric(format(as.Date(sim_period[2], format = "%Y-%m-%d"), "%Y"))
+  
+  # Create a vector of years from start to end
+  sim_period <- start_year:end_year
   
   saveRDS(out, file.path(
     getOption("output_version_folder"),
@@ -52,47 +57,40 @@ write_out <- function(out, field_data) {
     )
   )
   
-  # Inner join with field_data to add 'field_size_ha' column
-  out <- dplyr::inner_join(as.data.frame(out), field_data[,c("field_id", "field_size_ha")], by = "field_id")
-  out$co2_removals_total_yryr <- out$field_size_ha * out$co2_removals_all_years_last_month
-  out$co2_removals_total_inter <- out$field_size_ha * out$co2_removals_year_intpl
-  
-  out <- as_tibble(out)
-  
-  # Pivot to get wide format
-  wide_out <- out %>% select(field_id,year,co2_removals_all_years_last_month) %>% tidyr::pivot_wider(names_from = year, values_from = co2_removals_all_years_last_month)
-  wide_out_field_avg <- out %>% select(field_id,year,co2_removals_total_yryr) %>%  tidyr::pivot_wider(names_from = year, values_from = co2_removals_total_yryr) %>% select(matches("[0-9]")) %>% colSums()
-  names(wide_out) <- c("field_id", 2022:2041)
-  names(wide_out_field_avg) <- c(2022:2041)
-  wide_out_field_avg_YrYr <- as.data.frame(wide_out_field_avg)
-  colnames(wide_out_field_avg_YrYr) <- "SOC removals in tC02eq"
-  
-  # Pivot to get wide format
-  wide_out_inter <- out %>% select(field_id,year,co2_removals_year_intpl) %>% tidyr::pivot_wider(names_from = year, values_from = co2_removals_year_intpl)
-  wide_out_inter_field_avg <- out %>% select(field_id,year,co2_removals_total_inter) %>%  tidyr::pivot_wider(names_from = year, values_from = co2_removals_total_inter) %>% select(matches("[0-9]")) %>% colSums()
-  names(wide_out) <- c("field_id", 2022:2041)
-  names(wide_out_inter_field_avg) <- c(2022:2041)
-  wide_out_inter_field_avg <- as.data.frame(wide_out_inter_field_avg)
-  colnames(wide_out_inter_field_avg) <- "SOC removals in tC02eq"
-  
-  # Write to CSV files
-  write.csv(wide_out_field_avg_YrYr, file.path(
+  interval_cols <- grep("^Interval", names(out), value = TRUE)
+  if(!any(grepl("size", names(out)))) {out <- dplyr::inner_join(as.data.frame(out), field_data[, c("field_id", "field_size_ha")], by = "field_id")}
+  out[, interval_cols] <- out$field_size_ha * out[, interval_cols]
+
+  process_data <- function(out) {
+    wide_out <- list()
+    wide_out_field <- list()
+    for (colname in interval_cols) {
+      wide_out[[colname]] <- out %>%
+        select(field_id, year, colname) %>%
+        tidyr::pivot_wider(names_from = year, values_from = colname) %>%
+        select(matches("[0-9]")) %>%
+        colSums()
+      names(wide_out[[colname]]) <- sim_period
+      wide_out_field[[colname]] <- out %>%
+        select(field_id, year, colname) %>%
+        tidyr::pivot_wider(names_from = year, values_from = colname)
+      names(wide_out_field[[colname]]) <- c("field_id", 2022:2041)
+    }
+    return(list(
+      "wide_out" = as.data.frame(wide_out),
+      "wide_out_field" = as.data.frame(wide_out_field)
+    ))
+  }
+
+  out_processed <- process_data(out)
+
+  write.csv(out_processed$wide_out, file.path(
     getOption("output_version_folder"),
-    paste0("Avg_program_CO2_removals_per_year_YrYr_", getOption("version"), ".csv")
+    paste0("Avg_program_CO2_removals_per_year_", getOption("version"), ".csv")
   ))
-  
-  write.csv(as.data.frame(wide_out), file.path(
+
+  write.csv(out_processed$wide_out_field, file.path(
     getOption("output_version_folder"),
-    paste0("Program_CO2_SOC_removals_per_year_per_field_YrYr_", getOption("version"), ".csv")
-  ))
-  
-  write.csv(wide_out_inter_field_avg, file.path(
-    getOption("output_version_folder"),
-    paste0("Avg_program_CO2_removals_per_year_interpl_", getOption("version"), ".csv")
-  ))
-  
-  write.csv(as.data.frame(wide_out_inter), file.path(
-    getOption("output_version_folder"),
-    paste0("Program_CO2_SOC_removals_per_year_per_field_interpl_", getOption("version"), ".csv")
+    paste0("Program_CO2_SOC_removals_per_year_per_field_", getOption("version"), ".csv")
   ))
 }

@@ -62,7 +62,7 @@ pre_field_data_fert <- function(actuals_year, N_limit = 300) {
   file_extension2 <- tools::file_ext(getOption("fert_data"))
 
   if (file_extension1 == "csv") {
-    field_data <- read_delim(getOption("field_data"), delim = delimiter1)
+    field_data <- readr::read_delim(getOption("field_data"), delim = delimiter1)
   } else if (file_extension1 == "xlsx") {
     field_data <- readxl::read_xlsx(getOption("field_data"))
   } else {
@@ -70,7 +70,7 @@ pre_field_data_fert <- function(actuals_year, N_limit = 300) {
   }
 
   if (file_extension2 == "csv") {
-    fert_data <- read_delim(getOption("fert_data"), delim = delimiter2)
+    fert_data <- readr::read_delim(getOption("fert_data"), delim = delimiter2)
   } else if (file_extension2 == "xlsx") {
     fert_data <- readxl::read_xlsx(getOption("fert_data"))
   } else {

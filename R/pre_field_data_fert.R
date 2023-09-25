@@ -36,7 +36,7 @@ pre_field_data_fert <- function(actuals_year, N_limit = 300) {
     file_extension <- tools::file_ext(file_path)
 
     if (file_extension == "csv") {
-      first_line <- read_lines(file_path, n_max = 1)
+      first_line <- readr::read_lines(file_path, n_max = 1)
       if (grepl(",", first_line)) {
         delimiter <- ","
       } else if (grepl(";", first_line)) {

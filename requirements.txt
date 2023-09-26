@@ -1,1 +1,2 @@
+numpy
 rpy2[numpy]

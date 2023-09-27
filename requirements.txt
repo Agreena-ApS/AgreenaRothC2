@@ -1,2 +1,2 @@
 numpy
-rpy2[numpy]
+rpy2[all]

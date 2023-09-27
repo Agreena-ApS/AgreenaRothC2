@@ -27,21 +27,6 @@ model <- RothCModel(t = t,
            solver = deSolve.lsoda.wrapper,
            pass = FALSE)
 Ct <- getC(model)
-matplot(t,Ct,type="l",col=1:5, ylim=c(0,25),
-        ylab=expression(paste("Carbon stores (Mg C ", ha^-1,")")),
-        xlab="Time (years)", lty=1)
-lines(t,rowSums(Ct),lwd=2)
-legend("topleft",
-       c("Pool 1, DPM",
-         "Pool 2, RPM",
-         "Pool 3, BIO",
-         "Pool 4, HUM",
-         "Pool 5, IOM",
-         "Total Carbon"),
-       lty=1,
-       lwd=c(rep(1,5),2),
-       col=c(1:5,1),
-       bty="n"
 )
 '''
 )

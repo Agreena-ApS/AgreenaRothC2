@@ -103,7 +103,12 @@ with localconverter(default_converter + numpy2ri.converter + pandas2ri.converter
     # ...
     # 12 ...        ...
     fw = SoilR.fW_RothC(
-        precipitation, evaporation, soil_thickness, plant_material_ratio, clay, bare
+        precipitation,
+        evaporation,
+        soil_thickness,
+        plant_material_ratio,
+        clay,
+        bare
     )
     ft = SoilR.fT_RothC(temperature)  # returns a single value
 

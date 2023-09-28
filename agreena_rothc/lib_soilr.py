@@ -44,31 +44,22 @@ with localconverter(default_converter + numpy2ri.converter + pandas2ri.converter
     # solver = "euler"
     t = np.arange(1/12, int(input_variables["Years"].iloc[0]), 1/12)
 
-    # let's try `rothc.fW`
-    from rothc import RothC
-    rothc_obj = RothC(
-        temperature=weather_data["temperature"].to_numpy(),
-        precipitation=weather_data["precipitation"].to_numpy(),
-        evaporation=weather_data["evaporation"].to_numpy(),
-        years=input_variables["Years"].iloc[0],
-        decomposition_rates=np.array([10, 0.3, 0.66, 0.02, 0]),
-        initial_carbon=np.array([0.0, 0.0, 0.0, 0.0, 2.7]),
-        input_carbon=input_variables["biomass_inputs"].iloc[0],
-        farmyard_manure=input_variables["FYM"].iloc[0],
-        clay=input_variables["clay"].iloc[0],
-        soil_thickness=input_variables["Soil_thickness"].iloc[0],
-        plant_material_ratio=input_variables["DR"].iloc[0],
-        evaporation_coefficient=input_variables["pE"].iloc[0]
-    )
+    # `SoliR.fW_RothC` returns wrong results
+    # [1] "fw"
+    #  [1] 1.0000000 1.0000000 1.0000000 1.0000000 1.0000000 0.9577207 0.6132805
+    #  [8] 0.2661210 0.2000000 0.2000000 0.2000000 0.2000000
+    # [1] "ft"
+    #  [1] 4.259312 4.320228 4.520404 4.764131 4.708510 4.346614 4.086878 4.140131
+    #  [9] 4.222476 4.364371 4.471836 4.424251
+    fw_b = SoilR.fW_RothC(
+        np.array(weather_data["precipitation"]),
+        np.array(weather_data["evaporation"]),
+        int(input_variables["Soil_thickness"].iloc[0]),
+        float(input_variables["pE"].iloc[0]),    # plant_material_ratio,
+        float(input_variables["clay"].iloc[0]),
+        False if input_variables["bare"].iloc[0] == "FALSE" else True
+    )["b"]
 
-    _, fw_b = rothc_obj.fW(
-        precipitation=weather_data["precipitation"].to_numpy(),
-        evaporation=weather_data["evaporation"].to_numpy(),
-        soil_thickness=input_variables["Soil_thickness"].iloc[0],
-        evaporation_coefficient=input_variables["pE"].iloc[0],
-        clay=input_variables["clay"].iloc[0],
-        bare=False if input_variables["bare"].iloc[0] == "FALSE" else True
-    )
     ft = SoilR.fT_RothC(weather_data["temperature"])  # returns a single value
     breakpoint()
     # multiply = fw.multiply(ft, axis=0)

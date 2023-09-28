@@ -6,3 +6,6 @@
 .Rproj
 .venv/
 .env
+.csv
+agreena_rothc/rothc/
+bard_rothc.py

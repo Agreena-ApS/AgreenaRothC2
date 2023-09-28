@@ -45,32 +45,28 @@ with localconverter(default_converter + numpy2ri.converter + pandas2ri.converter
     t = np.arange(1/12, int(input_variables["Years"].iloc[0]), 1/12)
 
     # `SoliR.fW_RothC` returns wrong results
-    # [1] "fw"
-    #  [1] 1.0000000 1.0000000 1.0000000 1.0000000 1.0000000 0.9577207 0.6132805
-    #  [8] 0.2661210 0.2000000 0.2000000 0.2000000 0.2000000
-    # [1] "ft"
-    #  [1] 4.259312 4.320228 4.520404 4.764131 4.708510 4.346614 4.086878 4.140131
-    #  [9] 4.222476 4.364371 4.471836 4.424251
     fw_b = SoilR.fW_RothC(
-        np.array(weather_data["precipitation"]),
-        np.array(weather_data["evaporation"]),
-        int(input_variables["Soil_thickness"].iloc[0]),
-        float(input_variables["pE"].iloc[0]),    # plant_material_ratio,
-        float(input_variables["clay"].iloc[0]),
-        False if input_variables["bare"].iloc[0] == "FALSE" else True
+        P=np.array(weather_data["precipitation"]),
+        E=np.array(weather_data["evaporation"]),
+        S_Thick=int(input_variables["Soil_thickness"].iloc[0]),
+        pClay=float(input_variables["clay"].iloc[0]),
+        pE=float(input_variables["pE"].iloc[0]),    # plant_material_ratio,
+        bare=False if input_variables["bare"].iloc[0] == "FALSE" else True
     )["b"]
 
     ft = SoilR.fT_RothC(weather_data["temperature"])  # returns a single value
     breakpoint()
-    # multiply = fw.multiply(ft, axis=0)
+    # np.multiply(np.array(fw_b), ft)
 
     def np_rep_len(x, length_out):
-        # return np.tile(x, length_out // len(x) + 11)[:length_out]
+        return np.tile(x, length_out)[:length_out]
         # return np.resize(x, length_out)
-        return np.array(list(x) * (int(length_out / len(x))+1))[:length_out] 
+        # return np.array(list(x) * (int(length_out / len(x))+1))[:length_out] 
+        # return np.repeat(x, length_out)[:length_out]
+        # return robjects.r('''rep_len(x, length.out = lenght_out)''')
 
     xi = pd.DataFrame(
-        np_rep_len(fw_b * ft, len(t)),
+        np_rep_len(np.multiply(np.array(fw_b), ft), len(t)),
         index=t
     )
     

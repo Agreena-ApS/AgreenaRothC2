@@ -19,13 +19,13 @@
 #' @export
 f_moist_rothc <- function(pp, et, s_thick, pclay, pE = 1.0, soil_cover = TRUE) {
   if (length(et) != length(pp)) {
-    stop("pp and et must have the same lengh")
+    stop("pp and et must have the same length")
   }
   
   soil_cover <- as.logical(soil_cover)
   if (length(soil_cover) > 1) {
     if (length(soil_cover) != length(pp) | length(soil_cover) != length(et)) {
-      stop("pp, et and soil_cover must have the same lengh")
+      stop("pp, et and soil_cover must have the same length")
     }
     
     fw_bare <- fW.RothC(

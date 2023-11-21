@@ -33,17 +33,19 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
                             fees = 0.15,
                             buffer = 0.2,
                             premium = 0.1,
-                            uncertainty_rem = 0.15178495,
+                            uncertainty_rem = 0.14538659,
                             uncertainty_red = 0,
                             add_fallow_fields = TRUE, accounting_variable) {
   # Call the bind_and_merge function to get the merged data
-  merged <- bind_and_merge(files)
-  
+  merged <- AgreenaRothC2::bind_and_merge(files) %>%
+    select(-field_size_ha.y, -user_id.y) %>%
+    rename(field_size_ha = field_size_ha.x, user_id = user_id.x)
+
   # backward compatibility
   # if (exists("first_year", where = merged)) {
   #   names(merged)[grep("first_year", names(merged))] <- "co2_removals"
   # }
-  
+
   Fallow_fields <- NULL
 
   if (!add_fallow_fields) {
@@ -61,39 +63,47 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
       delta_fuel_emissions = baseline_fuel_emissions - actual_fuel_emissions,
 
       # Soil N2O emissions reductions (tCO2e/ha)
-      delta_soil_n2o_emissions  = baseline_soil_n2o_emissions - actual_soil_n2o_emissions,
+      delta_soil_n2o_emissions = baseline_soil_n2o_emissions - actual_soil_n2o_emissions,
+
+      # 2023-10-09 adding lime reductions (tC02e/ha)
+      delta_lime_emissions = `baseline_lime_co2_emissions_(5y)` - actual_lime_emissions,
 
       # Uncertainty deduction factor for removals
       uncertainty_deduction_rem = uncertainty_rem,
-      
+
+      # Uncertainty deduction per-field in co2e
+      uncertainty_deduction_rem_co2e = (!!as.name(accounting_variable) - total_leakage_tC_ha) * (uncertainty_deduction_rem) * field_size_ha,
+
       # Uncertainty deduction factor for emissions reductions
       uncertainty_deduction_red = uncertainty_red,
-      
+
       # Final SOC
       final_SOC = ini_SOC + !!as.name(accounting_variable),
 
       # Total emissions reductions (tCO2e)
-      Ered_eq37_field = (delta_fuel_emissions + delta_soil_n2o_emissions * (1 - uncertainty_deduction_red)) * field_size_ha,
-      
+      Ered_eq37_field = (delta_lime_emissions + delta_fuel_emissions + delta_soil_n2o_emissions) * (1 - uncertainty_deduction_red) * field_size_ha,
+
       # Total emissions reductions (tCO2e)
-      total_leakage_tC_ha = total_leakage_tC/field_size_ha,
-      
-      #fixing nas, nulls and nans
-      
-      total_leakage_tC_ha = ifelse(is.na(total_leakage_tC_ha),0,total_leakage_tC_ha),
-      
+      # latest version of leakage fixes this
+      # total_leakage_tC_ha = total_leakage_tC/field_size_ha,
+      total_leakage_tC_ha = total_leakage_tC_ha,
+
+      # fixing nas, nulls and nans
+
+      total_leakage_tC_ha = ifelse(is.na(total_leakage_tC_ha), 0, total_leakage_tC_ha),
+
       # Total emissions removals (tCO2e)
       Erem_eq38_field = (!!as.name(accounting_variable) - total_leakage_tC_ha) * (1 - uncertainty_deduction_rem) * field_size_ha,
 
       # Estimated net GHG emissions reductions and removals
       ERR_eq39_field = Ered_eq37_field + Erem_eq38_field,
-      
+
       # Buffer pool deduction (x% of total certificates) (tCO2e)
       buffer_field = Erem_eq38_field * buffer,
-      
-      #Number of VCUs in year
+
+      # Number of VCUs in year
       VCU_field_eq66 = Ered_eq37_field + (Erem_eq38_field - buffer_field),
-      
+
       # Fees deduction (x% of total certificates) (tCO2e)
       fees = VCU_field_eq66 * fees,
 

@@ -10,9 +10,10 @@ calculate_certs(
   fees = 0.15,
   buffer = 0.2,
   premium = 0.1,
-  uncertainty_rem = 0.15,
+  uncertainty_rem = 0.14538659,
   uncertainty_red = 0,
-  add_fallow_fields = TRUE
+  add_fallow_fields = TRUE,
+  accounting_variable
 )
 }
 \arguments{

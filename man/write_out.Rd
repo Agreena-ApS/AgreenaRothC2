@@ -4,7 +4,7 @@
 \alias{write_out}
 \title{Write out data to CSV files with CO2 SOC removals information.}
 \usage{
-write_out(out, field_data)
+write_out(out, field_data, sim_period)
 }
 \arguments{
 \item{out}{A data frame containing the input data, including columns 'field_id', 'year', and 'co2_removals'.

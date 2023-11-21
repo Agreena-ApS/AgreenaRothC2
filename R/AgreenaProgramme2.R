@@ -44,13 +44,13 @@ AgreenaProgramme2 <- function(lonlat,
                               soiltype = "Clay",
                               soil_data = "lucas",
                               calibrated = TRUE,
-                              SOC_limit = 200, 
+                              SOC_limit = 200,
                               cached_files = NULL) {
   set.seed(123)
   start <- Sys.time()
-    
 
-  
+
+
   tillage_conversion <- function(x) {
     y <- switch(x,
       "Conventional tillage" = 1,
@@ -60,7 +60,28 @@ AgreenaProgramme2 <- function(lonlat,
     )
     return(y)
   }
-  
+
+
+  # loading the CSV file with the detected cover crops outside the function
+  detected_cover_crops <- load_detected_cover_crops()
+
+  # add a new function parameter field_id_
+  cover_crop_convertion <- function(field_id_) {
+    detected_cover_crops_vector <- detected_cover_crops |>
+      dplyr::filter(season == "2021/2022", field_id == field_id_) |> # the season in this filter should not be hard coded
+      select(field_id, seasonal_cover_crop, is_moderate_coverage) |>
+      mutate(detec_green_cover = as.logical(seasonal_cover_crop) * as.logical(is_moderate_coverage)) |>
+      select(detec_green_cover) |>
+      unlist()
+    joint_cc_none <- c(c(0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0), detected_cover_crops_vector)
+    map <- c(18, 19, 20, 21, 5, 6, 7, 13, 14, 15, 16, 17)
+    out <- joint_cc_none[map]
+    names(out) <- month.name
+    return(out)
+  }
+
+
+
   # Until when did you have cover crops?
   cover_crop_convertion <- function(x) {
     y <- switch(x,
@@ -152,7 +173,7 @@ AgreenaProgramme2 <- function(lonlat,
   }
 
   soil$Carbon <- pmin(soil$Carbon, SOC_limit)
-  
+
   file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_coeffs", ".rds")
   if (calibrated) {
     if (file_name %in% names(cached_files)) {

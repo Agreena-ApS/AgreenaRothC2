@@ -53,3 +53,11 @@ load_cc <- function() {
   }
   return(cc)
 }
+
+#' @export
+load_detected_cover_crops <- function() {
+  if (!exists("detected_cover_crops")) {
+    detected_cover_crops <<- read.csv(file.path(getOption("param_inputs"), "detected_cover_crops.csv"))
+  }
+  return(detected_cover_crops)
+}

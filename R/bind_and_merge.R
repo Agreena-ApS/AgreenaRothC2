@@ -30,27 +30,28 @@ bind_and_merge <- function(files) {
       stop("Unsupported file type")
     )
   }
-  
+
   data_files <- list()
   for (i in 1:length(files)) {
     data_files[[names(files[i])]] <- bind_rows(lapply(files[[i]], read_file))
   }
-  
+
   nrows_data <- sapply(data_files, nrow)
   names_data <- names(data_files)
-  if (var(nrows_data)>0) {
-    warning(paste("The number of rows in the data sets are different.", paste(names_data,"=", nrows_data, collapse = ", ")))
+  if (var(nrows_data) > 0) {
+    warning(paste("The number of rows in the data sets are different.", paste(names_data, "=", nrows_data, collapse = ", ")))
   }
-  
+
   # Function to perform left join between two data frames
   left_join_dataframes <- function(df1, df2) {
-    merge(df1, df2, by = "field_id", all = TRUE)
+    # merge(df1, df2, by = "field_id", all = TRUE)
+    left_join(df1, df2)
   }
-  
+
   # Use Reduce() to perform left join on all data frames in the list
   merged_data <- Reduce(left_join_dataframes, data_files)
-  
-  
+
+
   # merged_data <- full_join(rothc_data, ipcc_data, by = "field_id")
   # merged_data <- full_join(merged_data, field_data, by = "field_id")
   # missing_field_ids <- list(

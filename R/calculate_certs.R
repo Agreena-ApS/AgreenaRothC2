@@ -37,9 +37,7 @@ calculate_certs <- function(files, uncertain_uncertanty_deduction = 0.0896,
                             uncertainty_red = 0,
                             add_fallow_fields = TRUE, accounting_variable) {
   # Call the bind_and_merge function to get the merged data
-  merged <- AgreenaRothC2::bind_and_merge(files) %>%
-    select(-field_size_ha.y, -user_id.y) %>%
-    rename(field_size_ha = field_size_ha.x, user_id = user_id.x)
+  merged <- AgreenaRothC2::bind_and_merge(files)
 
   # backward compatibility
   # if (exists("first_year", where = merged)) {

@@ -50,7 +50,7 @@ get_isric_soil_profile_rothc <- function(lonlat,
     queries_with_properties <- paste(
       base_with_lonlat,
       sprintf("property=%s", properties_in_order),
-      sep =  "&"
+      sep = "&"
     )
 
     res_all_queries <- lapply(queries_with_properties, jsonlite::fromJSON)
@@ -99,15 +99,15 @@ get_isric_soil_profile_rothc <- function(lonlat,
     }
   }
 
-  bdod <- rest.data$bdod$properties$layers$depths[[1]][1 : 5, 3]
-  clay <- rest.data$clay$properties$layers$depths[[1]][1 : 5, 3]
-  sand <- rest.data$sand$properties$layers$depths[[1]][1 : 5, 3]
-  silt <- rest.data$silt$properties$layers$depths[[1]][1 : 5, 3]
+  bdod <- rest.data$bdod$properties$layers$depths[[1]][1 : 6, 3]
+  clay <- rest.data$clay$properties$layers$depths[[1]][1 : 6, 3]
+  sand <- rest.data$sand$properties$layers$depths[[1]][1 : 6, 3]
+  silt <- rest.data$silt$properties$layers$depths[[1]][1 : 6, 3]
 
 
   ### For some of the conversions see: https://www.isric.org/explore/soilgrids/faq-soilgrids
   soil_profile <- NULL
-  soil_profile$layers <- rest.data[[1]]$properties$layers$depths[[1]]["label"][1 : 5, ]
+  soil_profile$label <- rest.data[[1]]$properties$layers$depths[[1]]["label"][1 : 6, ]
   soil_profile$BD <- bdod[[1]] * 1e-2
   soil_profile$Carbon <- ocs[[1]]
   soil_profile$ParticleSizeClay <- clay[[1]] * 1e-1

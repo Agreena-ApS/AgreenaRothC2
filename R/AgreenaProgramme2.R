@@ -44,13 +44,13 @@ AgreenaProgramme2 <- function(lonlat,
                               soiltype = "Clay",
                               soil_data = "lucas",
                               calibrated = TRUE,
-                              SOC_limit = 200, 
+                              SOC_limit = 200,
                               cached_files = NULL) {
   set.seed(123)
   start <- Sys.time()
-    
 
-  
+
+
   tillage_conversion <- function(x) {
     y <- switch(x,
       "Conventional tillage" = 1,
@@ -60,7 +60,7 @@ AgreenaProgramme2 <- function(lonlat,
     )
     return(y)
   }
-  
+
   # Until when did you have cover crops?
   cover_crop_convertion <- function(x) {
     y <- switch(x,
@@ -122,37 +122,52 @@ AgreenaProgramme2 <- function(lonlat,
     if (soil_data == "lucas") {
       soil <- get_lucas_soil_profile_rothc(lonlat)
     } else {
+      soil_data <- as.numeric(soil_data)
       if (is.numeric(soil_data)) {
-        soil_lyr_depth <- 0.3 # meters
-        # soil <-
-        #   data.frame(
-        #     label = c("0-10cm", "10-20cm", "20-30cm"),
-        #     Carbon = 1:3,
-        #     ParticleSizeClay = 1:3
-        #   )
-        soil <- data.frame(label = c("0-10cm", "10-20cm", "20-30cm"), Carbon = 1:3, ParticleSizeClay = 1:3)
-        soil$BD <- switch(soiltype,
-          "Clay" = 1.5,
-          "Silt" = 1.3,
-          "Sand" = 1.7
-        )
-        bulk_density <- soil$BD * 1000 # from g/cm3 to kg/m3 # From Lucas BD in the
-        soil$Carbon <-
-          soil_data / 172 * bulk_density * soil_lyr_depth * 10 # from SOM (CFT input) to tC/ha (RothC input)
-        # soil$ParticleSizeClay <- soil_lucas$ParticleSizeClay[1]
-        soil$ParticleSizeClay <- switch(soiltype,
-          "Clay" = 0.60,
-          "Silt" = 0.30,
-          "Sand" = 0.15
-        )
-        attr(soil, "meta")$Longitude <- lonlat[1]
-        attr(soil, "meta")$Latitude <- lonlat[2]
+        file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_soil", ".rds")
+        if (file_name %in% names(cached_files)) {
+          soil <- cached_files[[file_name]]
+          soil$Carbon <- soil_data
+        } else {
+          soil <-
+            get_isric_soil_profile_rothc(lonlat,
+              statistic = "mean",
+              find.location.name = FALSE
+            )
+          saveRDS(soil, paste0("inputs_cft/", file_name))
+          soil$Carbon <- soil_data
+        }
+        # Commenting cft conversion out temporarily
+        # soil_lyr_depth <- 0.3 # meters
+        # # soil <-
+        # #   data.frame(
+        # #     label = c("0-10cm", "10-20cm", "20-30cm"),
+        # #     Carbon = 1:3,
+        # #     ParticleSizeClay = 1:3
+        # #   )
+        # soil <- data.frame(label = c("0-10cm", "10-20cm", "20-30cm"), Carbon = 1:3, ParticleSizeClay = 1:3)
+        # soil$BD <- switch(soiltype,
+        #   "Clay" = 1.5,
+        #   "Silt" = 1.3,
+        #   "Sand" = 1.7
+        # )
+        # bulk_density <- soil$BD * 1000 # from g/cm3 to kg/m3 # From Lucas BD in the
+        # soil$Carbon <-
+        #   soil_data / 172 * bulk_density * soil_lyr_depth * 10 # from SOM (CFT input) to tC/ha (RothC input)
+        # # soil$ParticleSizeClay <- soil_lucas$ParticleSizeClay[1]
+        # soil$ParticleSizeClay <- switch(soiltype,
+        #   "Clay" = 0.60,
+        #   "Silt" = 0.30,
+        #   "Sand" = 0.15
+        # )
+        # attr(soil, "meta")$Longitude <- lonlat[1]
+        # attr(soil, "meta")$Latitude <- lonlat[2]
       }
     }
   }
 
   soil$Carbon <- pmin(soil$Carbon, SOC_limit)
-  
+
   file_name <- paste0(lonlat[2], "_", lonlat[1], "_", "30", "_coeffs", ".rds")
   if (calibrated) {
     if (file_name %in% names(cached_files)) {

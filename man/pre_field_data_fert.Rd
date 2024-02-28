@@ -35,7 +35,7 @@ This function performs the following steps:
 }
 \examples{
 \dontrun{
-  pre_field_data_fert(2022)
+pre_field_data_fert(2022)
 }
 
 }

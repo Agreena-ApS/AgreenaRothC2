@@ -22,12 +22,12 @@
 #'
 #' @examples
 #' \dontrun{
-#'   pre_field_data_fert(2022)
+#' pre_field_data_fert(2022)
 #' }
 #'
-#' @importFrom readr 
-#' @importFrom readxl 
-#' @importFrom dplyr 
+#' @import readr
+#' @import readxl
+#' @import dplyr
 #'
 #' @export
 
@@ -76,12 +76,12 @@ pre_field_data_fert <- function(actuals_year, N_limit = 300) {
   } else {
     stop("Unsupported file format. Only .csv and .xlsx files are supported.")
   }
-  
+
   field_data <- field_data %>%
     mutate_if(is.character, function(x) ifelse(is.na(as.numeric(x)), x, as.numeric(x)))
 
   data_source <- getOption("data_source")
-  
+
   org_c <- read.csv(file.path(data_source, getOption("org_fert_c_rate")))
   rownames(org_c) <- org_c[, 2]
   fert_data <- fert_data %>%
@@ -89,75 +89,77 @@ pre_field_data_fert <- function(actuals_year, N_limit = 300) {
     # dplyr::filter(actual_harvest_year == actuals_year, actual_fertilisers_mixed != "Only synthetic") %>%
     dplyr::filter(actual_harvest_year == actuals_year) %>%
     select(
-      "field_id","actual_fertilisers_mixed", contains("actual_fertiliser_id_"),
+      "field_id", "actual_harvest_year", "actual_fertilisers_mixed", contains("actual_fertiliser_id_"),
       contains("fertiliser_actual_application_rate"),
       contains("fertiliser_actual_fertiliser_name"),
       contains("fertiliser_actual_mode"),
       contains("fertiliser_actual_nitrogen_kg_ha")
     )
-  
+
   # testing what happens where there is an Synt fertlizer in the mix
   # fert_data[fert_data$field_id == 43333,"fertiliser_actual_fertiliser_id_07" ] = 1
   # fert_data[fert_data$field_id == 43333,"fertiliser_actual_fertiliser_name_07" ] = "Amonia"
   # fert_data[fert_data$field_id == 43333,"fertiliser_actual_application_rate_07" ] = 400
-  
+
   fert_names <- pivot_longer(fert_data,
-                             cols = contains("fertiliser_actual_fertiliser_name_0"),
-                             names_to = letters[1:5],
-                             names_sep = "_",
-                             values_to = "name"
+    cols = contains("fertiliser_actual_fertiliser_name_0"),
+    names_to = letters[1:5],
+    names_sep = "_",
+    values_to = "name"
   ) %>% select("field_id", "e", "name")
-  
+
   fert_modes <- pivot_longer(fert_data,
-                             cols = contains("fertiliser_actual_mode"),
-                             names_to = letters[2:5],
-                             names_sep = "_",
-                             values_to = "mode"
+    cols = contains("fertiliser_actual_mode"),
+    names_to = letters[2:5],
+    names_sep = "_",
+    values_to = "mode"
   ) %>% select("field_id", "e", "mode")
-  
+
   fert_rates <- pivot_longer(fert_data,
-                             cols = contains("fertiliser_actual_application_rate_0"),
-                             names_to = letters[1:5],
-                             names_sep = "_",
-                             values_to = "Application_rate"
+    cols = contains("fertiliser_actual_application_rate_0"),
+    names_to = letters[1:5],
+    names_sep = "_",
+    values_to = "Application_rate"
   ) %>%
     select("field_id", "e", "Application_rate")
-  
+
   fert_Nrates <- pivot_longer(fert_data,
-                              cols = contains("fertiliser_actual_nitrogen"),
-                              names_to = letters[1:6],
-                              names_sep = "_",
-                              values_to = "N_application"
+    cols = contains("fertiliser_actual_nitrogen"),
+    names_to = letters[1:6],
+    names_sep = "_",
+    values_to = "N_application"
   ) %>%
     select("field_id", "f", "N_application")
-  
+
   fert_id <- pivot_longer(fert_data,
-                          cols = contains("fertiliser_actual_fertiliser_id"),
-                          names_to = letters[1:5],
-                          names_sep = "_",
-                          values_to = "fert_id"
+    cols = contains("fertiliser_actual_fertiliser_id"),
+    names_to = letters[1:5],
+    names_sep = "_",
+    values_to = "fert_id"
   ) %>%
     select("field_id", "e", "fert_id")
-  
+
   fert_long <- left_join(fert_id, fert_rates, by = c("field_id", "e")) %>%
     left_join(fert_names, by = c("field_id", "e")) %>%
     left_join(fert_modes, by = c("field_id", "e")) %>%
     left_join(fert_Nrates, by = c("field_id", "e" = "f")) %>%
     drop_na(mode)
-  
+
   fert_long$n_rate <- fert_long %>%
     left_join(org_c, by = c("fert_id" = "id")) %>%
-    mutate(nitro_content = ifelse(is.na(nitro_content), 100, nitro_content)) %>% 
+    mutate(nitro_content = ifelse(is.na(nitro_content), 100, nitro_content)) %>%
     pull(nitro_content)
-  
 
-# Parei aqui, continuar segunda abrir aba fert_long
-  fert_long <- fert_long %>% mutate(name = ifelse(mode == "synthetic","synthetic", name), 
-                                    Application_rate = ifelse(mode == "synthetic", N_application,Application_rate))
-  
-  
-#=================
-# Recalculate the application rates based on N content
+
+
+  fert_long <- fert_long %>% mutate(
+    name = ifelse(mode == "synthetic", "synthetic", name),
+    Application_rate = ifelse(mode == "synthetic", N_application, Application_rate)
+  )
+
+
+  # =================
+  # Recalculate the application rates based on N content
   new_application_rates <- fert_long %>%
     mutate(add_N_field = ((n_rate / 100) * Application_rate)) %>%
     group_by(field_id) %>%
@@ -166,13 +168,13 @@ pre_field_data_fert <- function(actuals_year, N_limit = 300) {
     mutate(excess_diff = ifelse(total_add_N_field > N_limit, total_add_N_field - N_limit, 0)) %>%
     mutate(scaling_factor = ifelse(excess_diff > 0, (total_add_N_field - excess_diff) / total_add_N_field, 1)) %>%
     mutate(Application_rate_scaled = Application_rate * scaling_factor)
-#=================
-  
+  # =================
+
   fert_long <- left_join(fert_long, new_application_rates)
-  
+
   fert_long$c_rate <- fert_long %>%
     left_join(org_c, by = c("fert_id" = "id")) %>%
-    mutate(carbon_content = ifelse(is.na(carbon_content), 0, carbon_content)) %>% 
+    mutate(carbon_content = ifelse(is.na(carbon_content), 0, carbon_content)) %>%
     pull(carbon_content)
 
   fert_long <- fert_long %>%

@@ -27,7 +27,7 @@ environmental_variables <-
     wth_dates <- c("1991-01-01", "2021-12-30")
     # as.numeric(format(as.Date(wth_dates[1]),'%Y')) - as.numeric(format(as.Date(wth_dates[2]),'%Y'))
     soil <-
-      get_isric_soil_profile_rothc(c(long, lat),
+      get_isric_soil_profile_rothc2(c(long, lat),
         statistic = "mean",
         find.location.name = FALSE
       )

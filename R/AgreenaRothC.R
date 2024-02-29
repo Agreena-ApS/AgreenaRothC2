@@ -62,7 +62,7 @@ AgreenaRothC <-
 
     if (soil_data == "isric") {
       soil <-
-        get_isric_soil_profile_rothc(lonlat,
+        get_isric_soil_profile_rothc2(lonlat,
           statistic = "mean",
           find.location.name = FALSE
         )

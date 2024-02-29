@@ -111,11 +111,17 @@ AgreenaProgramme2 <- function(lonlat,
     if (file_name %in% names(cached_files)) {
       soil <- cached_files[[file_name]]
     } else {
-      soil <-
-        get_isric_soil_profile_rothc(lonlat,
-          statistic = "mean",
-          find.location.name = FALSE
-        )
+      tryCatch(
+        {
+          soil <- get_isric_soil_profile_rothc2(lonlat,
+            statistic = "mean",
+            find.location.name = FALSE
+          )
+        },
+        error = function(e) {
+          return(NULL)
+        }
+      )
       saveRDS(soil, paste0("inputs_cft/", file_name))
     }
   } else {
@@ -130,7 +136,7 @@ AgreenaProgramme2 <- function(lonlat,
           soil$Carbon <- soil_data
         } else {
           soil <-
-            get_isric_soil_profile_rothc(lonlat,
+            get_isric_soil_profile_rothc2(lonlat,
               statistic = "mean",
               find.location.name = FALSE
             )

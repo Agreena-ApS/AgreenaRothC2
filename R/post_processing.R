@@ -1,3 +1,11 @@
+#' Post process output from [AgreenaProgramme2]
+#'
+#' Note that, by default, this converts RothC output values from tC
+#' to __tCO2e__.
+#'
+#' @param out Object returned from [AgreenaProgramm2].
+#' @param type String: Currently ununsed.
+#' @param conversion Numeric: Conversion factor for C => CO2e conversion.
 #'
 #' @export
 

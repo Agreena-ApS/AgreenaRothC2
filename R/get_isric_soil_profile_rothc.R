@@ -43,32 +43,31 @@ get_isric_soil_profile_rothc <- function(lonlat,
 
   retrieve_soil <- function(lon, lat, statistic) {
     ##  rest0 <- "https://rest.soilgrids.org/soilgrids/v2.0/properties/query?lon="
-    rest0 <- "https://rest.isric.org/soilgrids/v2.0/properties/query?lon="
-    rest1 <- paste0(rest0, lon, "&lat=", lat)
-    rest.properties <- paste("&property=bdod",
-      "property=ocs",
-      "property=clay",
-      "property=sand",
-      "property=silt",
+    base_query_url <- "https://farm-data-api-7vy7lq4sca-ew.a.run.app/soilgrids/property/query?"
+    base_with_lonlat <- paste0(base_query_url, "lon=", lon, "&lat=", lat)
+    properties_in_order <- c("bdod", "ocs", "clay", "sand", "silt")
+
+    queries_with_properties <- paste(
+      base_with_lonlat,
+      sprintf("property=%s", properties_in_order),
       sep = "&"
     )
-    rest.depths <- paste("&depth=0-5cm", "depth=0-30cm", "depth=5-15cm",
-      "depth=15-30cm", "depth=30-60cm", "depth=60-100cm", "depth=100-200cm",
-      sep = "&"
-    )
-    rest.statistic <- paste("&value", statistic, sep = "=")
-    rest.query <- paste0(rest1, rest.properties, rest.depths, rest.statistic)
-    rest.data <- jsonlite::fromJSON(rest.query)
+
+    res_all_queries <- lapply(queries_with_properties, jsonlite::fromJSON)
+    names(res_all_queries) <- properties_in_order
+    return(res_all_queries)
   }
 
   set.seed(123)
   n <- 10
   c <- 0.001
   rest.data <- retrieve_soil(lon, lat, statistic)
-  ocs <- rest.data$properties$layers[3, 3][[1]][, 3]
+  ocs <- rest.data$ocs$properties$layers$depths[[1]][, 3]
 
   #### Process query
-  sp.nms <- rest.data$properties$layers[["name"]]
+  sp.nms <- sapply(rest.data, function(x) {
+    x$properties$layers$name
+  })
 
   if (!all(sp.nms %in% c("bdod", "ocs", "clay", "sand", "silt"))) {
     cat("Found these properties", sp.nms, "\n")
@@ -80,7 +79,7 @@ get_isric_soil_profile_rothc <- function(lonlat,
 
   # if(any(is.na(ocs))) stop("No soil data available for this location. Did you specify the coordinates correctly?")
   # Algorithm to deal with missing/invalid lat and long values
-  if (any(is.na(ocs))) {
+  if (any(isTRUE(is.na(ocs) | is.null(ocs)))) {
     while (any(is.na(ocs))) {
       lon <- runif(n, min = lon - c, max = lon + c)
       lat <- runif(n, min = lat - c, max = lat + c)
@@ -90,7 +89,7 @@ get_isric_soil_profile_rothc <- function(lonlat,
         lon <- as.numeric(lonlat[i, 1])
         lat <- as.numeric(lonlat[i, 2])
         rest.data <- retrieve_soil(lon, lat, statistic)
-        ocs <- rest.data$properties$layers[5, 3][[1]][, 3]
+        ocs <- rest.data$ocs$properties$layers$depths[[1]][, 3]
         if (!any(is.na(ocs))) {
           warning(paste("Coordinates where altered from (lon, lat):", lon_initial, lat_initial, "->", lon, lat))
           break
@@ -100,15 +99,15 @@ get_isric_soil_profile_rothc <- function(lonlat,
     }
   }
 
-  bdod <- rest.data$properties$layers[1, 3][[1]][, 3]
-  clay <- rest.data$properties$layers[2, 3][[1]][, 3]
-  sand <- rest.data$properties$layers[4, 3][[1]][, 3]
-  silt <- rest.data$properties$layers[5, 3][[1]][, 3]
+  bdod <- rest.data$bdod$properties$layers$depths[[1]][1 : 6, 3]
+  clay <- rest.data$clay$properties$layers$depths[[1]][1 : 6, 3]
+  sand <- rest.data$sand$properties$layers$depths[[1]][1 : 6, 3]
+  silt <- rest.data$silt$properties$layers$depths[[1]][1 : 6, 3]
 
 
   ### For some of the conversions see: https://www.isric.org/explore/soilgrids/faq-soilgrids
   soil_profile <- NULL
-  soil_profile$layers <- rest.data$properties$layers[1, 3][[1]][2]
+  soil_profile$label <- rest.data[[1]]$properties$layers$depths[[1]]["label"][1 : 6, ]
   soil_profile$BD <- bdod[[1]] * 1e-2
   soil_profile$Carbon <- ocs[[1]]
   soil_profile$ParticleSizeClay <- clay[[1]] * 1e-1
